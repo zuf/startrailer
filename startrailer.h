@@ -23,8 +23,10 @@ public:
     const QByteArray *image_to_qbyte_array(Magick::Image *image);
     const QByteArray *image_to_qbyte_array(Magick::Image &image);
 
-    const QByteArray *q_compose(const std::string &image_one_path, const std::string &image_another_path);
-    const QByteArray *q_compose_list(QStringList files);
+    Magick::Image *compose_list(QStringList files);
+
+    const QByteArray *q_compose(const std::string &image_one_path, const std::string &image_another_path);    
+    const QByteArray *q_compose_list_and_return_qbyte_array(QStringList files);
     const QByteArray *q_compose_model_list(const QFileSystemModel *model, QModelIndexList list);
 };
 

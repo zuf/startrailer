@@ -1,16 +1,10 @@
 #include "startrailer.h"
 
 #include <QDebug>
-#include <omp.h>
-
 
 StarTrailer::StarTrailer()
 {    
-#if defined(_OPENMP)
-   qDebug() << "Compiled by an OpenMP-compliant implementation.";
-   omp_set_num_threads(4);
-   qDebug() << "The result of omp_get_num_threads: " << omp_get_num_threads();
-#endif
+
 }
 
 Magick::Image *StarTrailer::compose_first_with_second(Magick::Image *first, Magick::Image *second)
@@ -71,7 +65,7 @@ const QByteArray *StarTrailer::image_to_qbyte_array(Magick::Image &image)
     return image_data;
 }
 
-const QByteArray *StarTrailer::q_compose_list(QStringList files)
+Magick::Image *StarTrailer::compose_list(QStringList files)
 {
     QStringList::const_iterator constIterator;
     Magick::Image *out_image = new Magick::Image((*files.constBegin()).toStdString());
@@ -84,10 +78,16 @@ const QByteArray *StarTrailer::q_compose_list(QStringList files)
         compose_first_with_second(out_image, tmp_image);
     }
 
-    delete tmp_image;
-    const QByteArray *image_data = image_to_qbyte_array(out_image);
-    delete out_image;
+    delete tmp_image;    
 
+    return out_image;
+}
+
+const QByteArray *StarTrailer::q_compose_list_and_return_qbyte_array(QStringList files)
+{
+    Magick::Image *image = compose_list(files);
+    const QByteArray *image_data = image_to_qbyte_array(image);
+    delete image;
     return image_data;
 }
 

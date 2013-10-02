@@ -26,5 +26,5 @@ CONFIG += link_pkgconfig
 PKGCONFIG += Magick++
 
 
-QMAKE_CXXFLAGS+=-fopenmp
-LIBS+=-lgomp
+#QMAKE_CXXFLAGS+=-fopenmp
+#LIBS+=-lgomp

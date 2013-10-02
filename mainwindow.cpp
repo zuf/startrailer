@@ -8,6 +8,7 @@
 #include <QElapsedTimer>
 #include "startrailer.h"
 #include <QMessageBox>
+#include <QListIterator>
 
 #include <Magick++.h>
 
@@ -86,33 +87,41 @@ void MainWindow::on_actionComposite_triggered()
     qDebug() << "Start composing...";
 
     QElapsedTimer timer;
-    timer.start();
-
-    QModelIndexList list = ui->filesList->selectionModel()->selectedIndexes();
+    timer.start();    
 
     StarTrailer st;
 //    const QByteArray *image_bytes = st.q_compose(model->filePath(list[0]).toStdString(), model->filePath(list[1]).toStdString());
 
     //const QByteArray *image_bytes = st.q_compose_model_list(model, ui->filesList->selectionModel()->selectedIndexes());
 
+    QStringList files;
+    QListIterator<QModelIndex> i(ui->filesList->selectionModel()->selectedIndexes());
+    while (i.hasNext())
+    {
+        files << model->filePath(i.next());
+    }
+    const QByteArray *image_bytes = st.q_compose_list_and_return_qbyte_array(files);
+
     /////////////////
 
-    QModelIndexList::const_iterator constIterator;
+//    QModelIndexList list = ui->filesList->selectionModel()->selectedIndexes();
 
-    Magick::Image *out_image = new Magick::Image(model->filePath(*list.constBegin()).toStdString());
-    Magick::Image *tmp_image = new Magick::Image(*out_image);
-    for (constIterator = list.constBegin(); constIterator != list.constEnd(); ++constIterator)
-    {
-        // TODO: Skip first iteration
-        //std::out << "Trail file: " << (*constIterator).toStdString();
-        qDebug() << "Trail file: " << (model->filePath((*constIterator)));;
-        tmp_image->read(model->filePath((*constIterator)).toStdString());
-        st.compose_first_with_second(out_image, tmp_image);
-    }
+//    QModelIndexList::const_iterator constIterator;
 
-    delete tmp_image;
-    const QByteArray *image_bytes = st.image_to_qbyte_array(out_image);
-    delete out_image;
+//    Magick::Image *out_image = new Magick::Image(model->filePath(*list.constBegin()).toStdString());
+//    Magick::Image *tmp_image = new Magick::Image(*out_image);
+//    for (constIterator = list.constBegin(); constIterator != list.constEnd(); ++constIterator)
+//    {
+//        // TODO: Skip first iteration
+//        //std::out << "Trail file: " << (*constIterator).toStdString();
+//        qDebug() << "Trail file: " << (model->filePath((*constIterator)));;
+//        tmp_image->read(model->filePath((*constIterator)).toStdString());
+//        st.compose_first_with_second(out_image, tmp_image);
+//    }
+
+//    delete tmp_image;
+//    const QByteArray *image_bytes = st.image_to_qbyte_array(out_image);
+//    delete out_image;
 
     ///////////////
 
