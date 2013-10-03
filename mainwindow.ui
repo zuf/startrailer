@@ -30,24 +30,29 @@
        <property name="selectionBehavior">
         <enum>QAbstractItemView::SelectRows</enum>
        </property>
+       <property name="uniformRowHeights">
+        <bool>false</bool>
+       </property>
        <property name="sortingEnabled">
         <bool>true</bool>
        </property>
        <property name="headerHidden">
         <bool>false</bool>
        </property>
-      </widget>
-      <widget class="QGraphicsView" name="graphicsView">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
+       <property name="expandsOnDoubleClick">
+        <bool>false</bool>
        </property>
+       <attribute name="headerCascadingSectionResizes">
+        <bool>true</bool>
+       </attribute>
+       <attribute name="headerMinimumSectionSize">
+        <number>10</number>
+       </attribute>
+       <attribute name="headerStretchLastSection">
+        <bool>true</bool>
+       </attribute>
       </widget>
-      <widget class="QWidget" name="verticalLayoutWidget">
-       <layout class="QVBoxLayout" name="verticalLayout_2"/>
-      </widget>
+      <widget class="View" name="graphicsView"/>
      </widget>
     </item>
     <item>
@@ -77,7 +82,9 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionBack"/>
+   <addaction name="actionUpdateFileList"/>
    <addaction name="actionComposite"/>
+   <addaction name="actionClearSelection"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionBack">
@@ -93,8 +100,25 @@
     <string>Composite</string>
    </property>
   </action>
+  <action name="actionUpdateFileList">
+   <property name="text">
+    <string>Update file list</string>
+   </property>
+  </action>
+  <action name="actionClearSelection">
+   <property name="text">
+    <string>Clear Selection</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>View</class>
+   <extends>QGraphicsView</extends>
+   <header>view.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

@@ -34,6 +34,12 @@ private slots:
 
     }
 
+    void on_actionUpdateFileList_triggered();
+
+    void on_actionClearSelection_triggered();
+
+    void on_filesList_activated(const QModelIndex &index);
+
 private:
     void checkIfDone();
 

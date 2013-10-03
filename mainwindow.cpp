@@ -17,7 +17,7 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
-{
+{    
     ui->setupUi(this);
 
     model = new QFileSystemModel;    
@@ -25,11 +25,11 @@ MainWindow::MainWindow(QWidget *parent) :
     QString start_path = QDir::currentPath();
     QStringList cmdline_args = QCoreApplication::arguments();
 
-    qDebug() << "cmdline_args: " << cmdline_args;
-    cmdline_args.pop_front();
-    qDebug() << "cmdline_args: " << cmdline_args.first();
-    if (cmdline_args.size()>0)
+    if (cmdline_args.size()>1)
+    {
+        cmdline_args.pop_front();
         start_path = cmdline_args.first();
+    }
 
     model->setRootPath(start_path);
     qDebug() << "QDir::currentPath(): " << start_path;
@@ -40,16 +40,27 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->filesList->setSortingEnabled(true);    
     ui->filesList->setRootIndex(model->index(start_path));
 
+    item = new QGraphicsPixmapItem();
+
     scene = new QGraphicsScene();
+    scene->addItem(item);
+
+    qDebug() << "QThread::idealThreadCount(): " << QThread::idealThreadCount();
+
+    ui->graphicsView->setBackgroundBrush(QBrush(QColor(32,32,32), Qt::SolidPattern));
+    ui->graphicsView->setResizeAnchor(QGraphicsView::AnchorViewCenter);
+    //scene->addItem(item);
+    ui->graphicsView->setScene(scene);
+    item->setTransformationMode(Qt::SmoothTransformation);
+
+    ui->splitter->setStretchFactor(1, 10);
 
 }
 
 MainWindow::~MainWindow()
-{
-    if (item)
-      delete item;
-
+{       
     delete scene;
+    //delete item;
     delete ui;
     delete model;
 }
@@ -57,35 +68,23 @@ MainWindow::~MainWindow()
 void MainWindow::on_filesList_doubleClicked(const QModelIndex &index)
 {
     QString path = model->filePath(index);
-//    qDebug() << index;
-//    qDebug() << path;
-//    model->setRootPath(model->filePath(index));
 
     if (model->fileInfo(index).isDir())
     {
         ui->filesList->setRootIndex(index);
         model->setRootPath(model->filePath(index));
-        model->sort(0);
+        model->sort(0);        
     }
     else
     {
-//        qDebug() << path;
-
         QMimeDatabase mimeDatabase;
         QMimeType mimeType;
         mimeType = mimeDatabase.mimeTypeForFile(path);
-//        qDebug() << mimeType.name();
-//        qDebug() << "Valid: " << mimeType.isValid();
 
-        QImage image(path);
-        if (item)
-          delete item;
-        item = new QGraphicsPixmapItem(QPixmap::fromImage(image));
-        scene->addItem(item);        
-        ui->graphicsView->setScene(scene);
+        QImage image(path);        
+        item->setPixmap(QPixmap::fromImage(image));
         item->setTransformationMode(Qt::SmoothTransformation);
         ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
-//        qDebug() << model->filePath(model->parent(ui->filesList->rootIndex()));
     }
 
 }
@@ -93,7 +92,6 @@ void MainWindow::on_filesList_doubleClicked(const QModelIndex &index)
 
 void MainWindow::on_actionBack_triggered()
 {
-//    qDebug() << "Got to upper dir";    
     QModelIndex parent_index = model->parent(ui->filesList->rootIndex());
     ui->filesList->setRootIndex(parent_index);
     model->setRootPath(model->filePath(parent_index));
@@ -131,15 +129,19 @@ void MainWindow::on_actionComposite_triggered()
     int n=0;
     foreach (const int chunkSize, sizes) {
         futuries[n]= QtConcurrent::run(&st, &StarTrailer::compose_list, files.mid(offset, chunkSize));
+        qDebug() << "QtConcurrent::run #" << n  ;
         //connect(&watchers[n], SIGNAL(finished()), &myObject, SLOT(handleFinished()));
-        watchers[n].setFuture(futuries[n]);
-        ++n;
-        offset += chunkSize;
+        watchers[n].setFuture(futuries[n]);        
+        ++n;        
+        offset += chunkSize;        
     }
+
+    qDebug() << "---------------------------";
 
     Magick::Image *out = 0;
     for (int i=0; i<sizes.size();++i)
     {
+        qDebug() << "Wait for QtConcurrent::run #" << i ;
         Magick::Image *img = futuries[i].result();
         if (out==0)
         {
@@ -153,39 +155,17 @@ void MainWindow::on_actionComposite_triggered()
     }
     const QByteArray *image_bytes = st.image_to_qbyte_array(out);
     delete out;
-    /////////////////
 
-//    QModelIndexList list = ui->filesList->selectionModel()->selectedIndexes();
-
-//    QModelIndexList::const_iterator constIterator;
-
-//    Magick::Image *out_image = new Magick::Image(model->filePath(*list.constBegin()).toStdString());
-//    Magick::Image *tmp_image = new Magick::Image(*out_image);
-//    for (constIterator = list.constBegin(); constIterator != list.constEnd(); ++constIterator)
-//    {
-//        // TODO: Skip first iteration
-//        //std::out << "Trail file: " << (*constIterator).toStdString();
-//        qDebug() << "Trail file: " << (model->filePath((*constIterator)));;
-//        tmp_image->read(model->filePath((*constIterator)).toStdString());
-//        st.compose_first_with_second(out_image, tmp_image);
-//    }
-
-//    delete tmp_image;
-//    const QByteArray *image_bytes = st.image_to_qbyte_array(out_image);
-//    delete out_image;
-
-    ///////////////
+    qDebug() << "Start format image for Qt";
 
     QPixmap qpm;
     qpm.loadFromData(*image_bytes);
+
+    qDebug() << "QPixmap loaded";
+
     delete image_bytes;
 
-    if (item)
-      delete item;
-    item = new QGraphicsPixmapItem(qpm);
-    scene->addItem(item);
-    ui->graphicsView->setScene(scene);
-    item->setTransformationMode(Qt::SmoothTransformation);
+    item->setPixmap(qpm);
     ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
 
     qDebug() << "The slow operation took " << timer.elapsed() << " milliseconds";
@@ -211,6 +191,8 @@ void MainWindow::on_filesList_clicked(const QModelIndex &index)
             item->setTransformationMode(Qt::SmoothTransformation);
             ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
             //        qDebug() << model->filePath(model->parent(ui->filesList->rootIndex()));
+
+            ui->statusBar->showMessage(tr("Selected: %1").arg(ui->filesList->selectionModel()->selectedRows().count()));
 }
 
 void MainWindow::checkIfDone()
@@ -218,3 +200,19 @@ void MainWindow::checkIfDone()
 
 }
 
+
+void MainWindow::on_actionUpdateFileList_triggered()
+{
+    ui->filesList->update(ui->filesList->rootIndex());
+}
+
+void MainWindow::on_actionClearSelection_triggered()
+{
+    ui->filesList->selectionModel()->clearSelection();
+    ui->statusBar->showMessage(tr("Selection cleared"), 5000);
+}
+
+void MainWindow::on_filesList_activated(const QModelIndex &index)
+{
+    ui->statusBar->showMessage(tr("Selected: %1").arg(ui->filesList->selectionModel()->selectedRows().count()));
+}
