@@ -14,10 +14,12 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    startrailer.cpp
+    startrailer.cpp \
+    compositetrailstask.cpp
 
 HEADERS  += mainwindow.h \
-    startrailer.h
+    startrailer.h \
+    compositetrailstask.h
 
 FORMS    += mainwindow.ui
 

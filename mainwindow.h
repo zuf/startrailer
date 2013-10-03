@@ -35,6 +35,23 @@ private:
 
     QGraphicsScene* scene;
     QGraphicsPixmapItem* item;
+
+    QVector<int> chunkSizes(const int size, const int chunkCount)
+    {
+        Q_ASSERT(size > 0 && chunkCount > 0);
+        if (chunkCount == 1)
+            return QVector<int>() << size;
+        QVector<int> result(chunkCount, size / chunkCount);
+        if (int remainder = size % chunkCount) {
+            int index = 0;
+            for (int i = 0; i < remainder; ++i) {
+                ++result[index];
+                ++index;
+                index %= chunkCount;
+            }
+        }
+        return result;
+    }
 };
 
 #endif // MAINWINDOW_H
