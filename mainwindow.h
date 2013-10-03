@@ -29,7 +29,14 @@ private slots:
 
     void on_filesList_clicked(const QModelIndex &index);
 
+
+    void composing_finished(){
+
+    }
+
 private:
+    void checkIfDone();
+
     Ui::MainWindow *ui;
     QFileSystemModel *model;
 

@@ -30,3 +30,5 @@ PKGCONFIG += Magick++
 
 #QMAKE_CXXFLAGS+=-fopenmp
 #LIBS+=-lgomp
+
+#QMAKE_CXXFLAGS_RELEASE += -O2

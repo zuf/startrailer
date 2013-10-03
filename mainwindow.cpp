@@ -21,11 +21,24 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     model = new QFileSystemModel;    
-    model->setRootPath(QDir::currentPath());
-    model->sort(1);
+
+    QString start_path = QDir::currentPath();
+    QStringList cmdline_args = QCoreApplication::arguments();
+
+    qDebug() << "cmdline_args: " << cmdline_args;
+    cmdline_args.pop_front();
+    qDebug() << "cmdline_args: " << cmdline_args.first();
+    if (cmdline_args.size()>0)
+        start_path = cmdline_args.first();
+
+    model->setRootPath(start_path);
+    qDebug() << "QDir::currentPath(): " << start_path;
+    //model->setFilter( QDir::AllDirs | QDir::NoDotAndDotDot );
+    model->sort(0);
 
     ui->filesList->setModel(model);
     ui->filesList->setSortingEnabled(true);    
+    ui->filesList->setRootIndex(model->index(start_path));
 
     scene = new QGraphicsScene();
 
@@ -51,6 +64,8 @@ void MainWindow::on_filesList_doubleClicked(const QModelIndex &index)
     if (model->fileInfo(index).isDir())
     {
         ui->filesList->setRootIndex(index);
+        model->setRootPath(model->filePath(index));
+        model->sort(0);
     }
     else
     {
@@ -78,11 +93,13 @@ void MainWindow::on_filesList_doubleClicked(const QModelIndex &index)
 
 void MainWindow::on_actionBack_triggered()
 {
-//    qDebug() << "Got to upper dir";
-    ui->filesList->rootIndex();
-    ui->filesList->setRootIndex(model->parent(ui->filesList->rootIndex()));
-
+//    qDebug() << "Got to upper dir";    
+    QModelIndex parent_index = model->parent(ui->filesList->rootIndex());
+    ui->filesList->setRootIndex(parent_index);
+    model->setRootPath(model->filePath(parent_index));
+    model->sort(0);
 }
+
 
 void MainWindow::on_actionComposite_triggered()
 {
@@ -105,8 +122,37 @@ void MainWindow::on_actionComposite_triggered()
 
     const QVector<int> sizes = chunkSizes(files.count(), QThread::idealThreadCount());
 
-    const QByteArray *image_bytes = st.q_compose_list_and_return_qbyte_array(files);
+    qDebug() << "schunk sizes: " << sizes;
 
+    //const QByteArray *image_bytes = st.q_compose_list_and_return_qbyte_array(files);
+    int offset = 0;
+    QFuture<Magick::Image *> futuries[sizes.size()]; // TODO: QList it
+    QFutureWatcher<Magick::Image *> watchers[sizes.size()]; // TODO: QList it
+    int n=0;
+    foreach (const int chunkSize, sizes) {
+        futuries[n]= QtConcurrent::run(&st, &StarTrailer::compose_list, files.mid(offset, chunkSize));
+        //connect(&watchers[n], SIGNAL(finished()), &myObject, SLOT(handleFinished()));
+        watchers[n].setFuture(futuries[n]);
+        ++n;
+        offset += chunkSize;
+    }
+
+    Magick::Image *out = 0;
+    for (int i=0; i<sizes.size();++i)
+    {
+        Magick::Image *img = futuries[i].result();
+        if (out==0)
+        {
+            out = new Magick::Image(*img);
+        }
+        else
+        {
+            st.compose_first_with_second(out, img);
+        }
+        delete img;
+    }
+    const QByteArray *image_bytes = st.image_to_qbyte_array(out);
+    delete out;
     /////////////////
 
 //    QModelIndexList list = ui->filesList->selectionModel()->selectedIndexes();
@@ -164,6 +210,11 @@ void MainWindow::on_filesList_clicked(const QModelIndex &index)
             ui->graphicsView->setScene(scene);
             item->setTransformationMode(Qt::SmoothTransformation);
             ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
-    //        qDebug() << model->filePath(model->parent(ui->filesList->rootIndex()));
+            //        qDebug() << model->filePath(model->parent(ui->filesList->rootIndex()));
+}
+
+void MainWindow::checkIfDone()
+{
+
 }
 

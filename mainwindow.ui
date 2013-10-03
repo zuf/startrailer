@@ -28,7 +28,7 @@
         <enum>QAbstractItemView::MultiSelection</enum>
        </property>
        <property name="selectionBehavior">
-        <enum>QAbstractItemView::SelectItems</enum>
+        <enum>QAbstractItemView::SelectRows</enum>
        </property>
        <property name="sortingEnabled">
         <bool>true</bool>
