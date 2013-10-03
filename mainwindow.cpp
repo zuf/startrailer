@@ -9,6 +9,8 @@
 #include "startrailer.h"
 #include <QMessageBox>
 #include <QListIterator>
+#include <QtConcurrent/QtConcurrent>
+#include <QThread>
 
 #include <Magick++.h>
 
@@ -100,6 +102,9 @@ void MainWindow::on_actionComposite_triggered()
     {
         files << model->filePath(i.next());
     }
+
+    const QVector<int> sizes = chunkSizes(files.count(), QThread::idealThreadCount());
+
     const QByteArray *image_bytes = st.q_compose_list_and_return_qbyte_array(files);
 
     /////////////////
