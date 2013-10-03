@@ -8,6 +8,7 @@
 #include <QElapsedTimer>
 #include "startrailer.h"
 #include <QMessageBox>
+#include <QListIterator>
 
 #include <Magick++.h>
 
@@ -17,8 +18,9 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    model = new QFileSystemModel;
+    model = new QFileSystemModel;    
     model->setRootPath(QDir::currentPath());
+    model->sort(1);
 
     ui->filesList->setModel(model);
     ui->filesList->setSortingEnabled(true);    
@@ -71,10 +73,6 @@ void MainWindow::on_filesList_doubleClicked(const QModelIndex &index)
 
 }
 
-void MainWindow::on_filesList_customContextMenuRequested(const QPoint &pos)
-{
-
-}
 
 void MainWindow::on_actionBack_triggered()
 {
@@ -89,18 +87,44 @@ void MainWindow::on_actionComposite_triggered()
     qDebug() << "Start composing...";
 
     QElapsedTimer timer;
-    timer.start();
-
-    QModelIndexList list = ui->filesList->selectionModel()->selectedIndexes();
-
-    if (list.size() != 2)
-    {
-        QMessageBox::information(NULL, "Please chose only two image files!", "Select two images");
-        return;
-    }
+    timer.start();    
 
     StarTrailer st;
-    const QByteArray *image_bytes = st.compose(model->filePath(list[0]).toStdString(), model->filePath(list[1]).toStdString());
+//    const QByteArray *image_bytes = st.q_compose(model->filePath(list[0]).toStdString(), model->filePath(list[1]).toStdString());
+
+    //const QByteArray *image_bytes = st.q_compose_model_list(model, ui->filesList->selectionModel()->selectedIndexes());
+
+    QStringList files;
+    QListIterator<QModelIndex> i(ui->filesList->selectionModel()->selectedIndexes());
+    while (i.hasNext())
+    {
+        files << model->filePath(i.next());
+    }
+    const QByteArray *image_bytes = st.q_compose_list_and_return_qbyte_array(files);
+
+    /////////////////
+
+//    QModelIndexList list = ui->filesList->selectionModel()->selectedIndexes();
+
+//    QModelIndexList::const_iterator constIterator;
+
+//    Magick::Image *out_image = new Magick::Image(model->filePath(*list.constBegin()).toStdString());
+//    Magick::Image *tmp_image = new Magick::Image(*out_image);
+//    for (constIterator = list.constBegin(); constIterator != list.constEnd(); ++constIterator)
+//    {
+//        // TODO: Skip first iteration
+//        //std::out << "Trail file: " << (*constIterator).toStdString();
+//        qDebug() << "Trail file: " << (model->filePath((*constIterator)));;
+//        tmp_image->read(model->filePath((*constIterator)).toStdString());
+//        st.compose_first_with_second(out_image, tmp_image);
+//    }
+
+//    delete tmp_image;
+//    const QByteArray *image_bytes = st.image_to_qbyte_array(out_image);
+//    delete out_image;
+
+    ///////////////
+
     QPixmap qpm;
     qpm.loadFromData(*image_bytes);
     delete image_bytes;
@@ -115,3 +139,26 @@ void MainWindow::on_actionComposite_triggered()
 
     qDebug() << "The slow operation took " << timer.elapsed() << " milliseconds";
 }
+
+void MainWindow::on_filesList_clicked(const QModelIndex &index)
+{
+    QString path = model->filePath(index);
+    //        qDebug() << path;
+
+            QMimeDatabase mimeDatabase;
+            QMimeType mimeType;
+            mimeType = mimeDatabase.mimeTypeForFile(path);
+    //        qDebug() << mimeType.name();
+    //        qDebug() << "Valid: " << mimeType.isValid();
+
+            QImage image(path);
+            if (item)
+              delete item;
+            item = new QGraphicsPixmapItem(QPixmap::fromImage(image));
+            scene->addItem(item);
+            ui->graphicsView->setScene(scene);
+            item->setTransformationMode(Qt::SmoothTransformation);
+            ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
+    //        qDebug() << model->filePath(model->parent(ui->filesList->rootIndex()));
+}
+

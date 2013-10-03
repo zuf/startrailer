@@ -24,3 +24,7 @@ FORMS    += mainwindow.ui
 #LIBS += `Magick++-config --cppflags --cxxflags --ldflags --libs`
 CONFIG += link_pkgconfig
 PKGCONFIG += Magick++
+
+
+#QMAKE_CXXFLAGS+=-fopenmp
+#LIBS+=-lgomp
