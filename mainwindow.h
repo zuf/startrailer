@@ -20,6 +20,9 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+public slots:
+    void handleFinished();
+
 private slots:
     void on_filesList_doubleClicked(const QModelIndex &index);    
 
@@ -38,7 +41,6 @@ private slots:
 
     void on_actionClearSelection_triggered();
 
-    void on_filesList_activated(const QModelIndex &index);
 
 private:
     void checkIfDone();

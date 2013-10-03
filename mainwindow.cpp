@@ -65,6 +65,56 @@ MainWindow::~MainWindow()
     delete model;
 }
 
+QVector<int> sizes;
+int finished_runners = 0;
+QFuture<Magick::Image *> futuries[100]; // TODO: QList it
+QFutureWatcher<Magick::Image *> watchers[100]; // TODO: QList it
+
+void MainWindow::handleFinished()
+{
+    ++finished_runners;
+    qDebug() << "handleFinished(): " << finished_runners;
+
+    if (finished_runners >= QThread::idealThreadCount())
+    {
+        finished_runners=0;
+        StarTrailer st;
+        Magick::Image *out = 0;
+        qDebug() << "sizes.size(): " << sizes.size();
+        for (int i=0; i<sizes.size();++i)
+        {
+            qDebug() << "Wait for QtConcurrent::run #" << i ;
+            Magick::Image *img = futuries[i].result();
+            futuries[i].waitForFinished ();
+            // TODO: Delete/reset future
+            if (out==0)
+            {
+                out = new Magick::Image(*img);
+            }
+            else
+            {
+                st.compose_first_with_second(out, img);
+            }
+            delete img;
+        }
+        const QByteArray *image_bytes = st.image_to_qbyte_array(out);
+        delete out;
+
+        qDebug() << "Start format image for Qt";
+
+        QPixmap qpm;
+        qpm.loadFromData(*image_bytes);
+
+        qDebug() << "QPixmap loaded";
+
+        delete image_bytes;
+
+        item->setPixmap(qpm);
+        ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
+    }
+
+}
+
 void MainWindow::on_filesList_doubleClicked(const QModelIndex &index)
 {
     QString path = model->filePath(index);
@@ -118,57 +168,27 @@ void MainWindow::on_actionComposite_triggered()
         files << model->filePath(i.next());
     }
 
-    const QVector<int> sizes = chunkSizes(files.count(), QThread::idealThreadCount());
+    sizes = chunkSizes(files.count(), QThread::idealThreadCount());
 
     qDebug() << "schunk sizes: " << sizes;
 
     //const QByteArray *image_bytes = st.q_compose_list_and_return_qbyte_array(files);
-    int offset = 0;
-    QFuture<Magick::Image *> futuries[sizes.size()]; // TODO: QList it
-    QFutureWatcher<Magick::Image *> watchers[sizes.size()]; // TODO: QList it
-    int n=0;
+    int offset = 0;    
+    int n=0;    
+    finished_runners = 0;
     foreach (const int chunkSize, sizes) {
-        futuries[n]= QtConcurrent::run(&st, &StarTrailer::compose_list, files.mid(offset, chunkSize));
-        qDebug() << "QtConcurrent::run #" << n  ;
-        //connect(&watchers[n], SIGNAL(finished()), &myObject, SLOT(handleFinished()));
+        bool connected = connect(&watchers[n], SIGNAL(finished()), this, SLOT(handleFinished()));
+        qDebug() << "connected: " << connected;
+        futuries[n]= QtConcurrent::run(&st, &StarTrailer::compose_list, files.mid(offset, chunkSize));        
         watchers[n].setFuture(futuries[n]);        
+        qDebug() << "QtConcurrent::run #" << n  ;
         ++n;        
         offset += chunkSize;        
     }
 
     qDebug() << "---------------------------";
 
-    Magick::Image *out = 0;
-    for (int i=0; i<sizes.size();++i)
-    {
-        qDebug() << "Wait for QtConcurrent::run #" << i ;
-        Magick::Image *img = futuries[i].result();
-        if (out==0)
-        {
-            out = new Magick::Image(*img);
-        }
-        else
-        {
-            st.compose_first_with_second(out, img);
-        }
-        delete img;
-    }
-    const QByteArray *image_bytes = st.image_to_qbyte_array(out);
-    delete out;
 
-    qDebug() << "Start format image for Qt";
-
-    QPixmap qpm;
-    qpm.loadFromData(*image_bytes);
-
-    qDebug() << "QPixmap loaded";
-
-    delete image_bytes;
-
-    item->setPixmap(qpm);
-    ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
-
-    qDebug() << "The slow operation took " << timer.elapsed() << " milliseconds";
 }
 
 void MainWindow::on_filesList_clicked(const QModelIndex &index)
@@ -212,7 +232,4 @@ void MainWindow::on_actionClearSelection_triggered()
     ui->statusBar->showMessage(tr("Selection cleared"), 5000);
 }
 
-void MainWindow::on_filesList_activated(const QModelIndex &index)
-{
-    ui->statusBar->showMessage(tr("Selected: %1").arg(ui->filesList->selectionModel()->selectedRows().count()));
-}
+
