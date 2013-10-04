@@ -23,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {    
     ui->setupUi(this);
 
-    ui->progressBar->hide();
+//    ui->progressBar->hide();
 
     model = new QFileSystemModel;
 
@@ -62,10 +62,15 @@ MainWindow::MainWindow(QWidget *parent) :
 
     QObject::connect(ui->filesList->selectionModel(), &QItemSelectionModel::selectionChanged,
                      this, &MainWindow::selectionChanged);
+
+    progress_bar = new QProgressBar(this);
+    progress_bar->hide();
+    ui->statusBar->addPermanentWidget(progress_bar);
 }
 
 MainWindow::~MainWindow()
 {       
+    delete progress_bar;
     delete scene;
     //delete item;
     delete ui;
@@ -185,9 +190,9 @@ void MainWindow::compositeSelected()
         QVector<int> sizes = chunkSizes(files.count(), QThread::idealThreadCount());
         qDebug() << "schunk sizes: " << sizes;
 
-        ui->progressBar->setMaximum(files.size());
-        ui->progressBar->setValue(0);
-        ui->progressBar->show();
+        progress_bar->setMaximum(files.size());
+        progress_bar->setValue(0);
+        progress_bar->show();
         int offset=0;
         preview_image.read(files[0].toStdString());
         for (int n=0; n<sizes.size(); n++)
@@ -211,8 +216,19 @@ void MainWindow::compositeSelected()
 
 void MainWindow::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
-    compositeSelected(); // TODO: Doesn't redraw all. If selection only added, then add them to current preview.
-    // If deselected.size()>0 then redraw all
+    static QTimer *timer=0;
+    if (timer)
+    {
+        timer->stop();
+        delete timer;
+        timer=0;
+    }
+
+    timer = new QTimer(this);
+    timer->setSingleShot(true);
+    connect(timer, SIGNAL(timeout()), this, SLOT(slot_compositeSelected()));
+    timer->start(20);
+
 }
 
 void MainWindow::drawMagickImage(Magick::Image image)
@@ -247,7 +263,7 @@ void MainWindow::on_actionClearSelection_triggered()
 
 void MainWindow::announceProgress(int counter)
 {
-    ui->progressBar->setValue( ui->progressBar->value() + 1 );
+    progress_bar->setValue( progress_bar->value() + 1 );
 }
 
 void MainWindow::receiveMagickImage(Magick::Image *image)
@@ -266,8 +282,8 @@ void MainWindow::receiveMagickImage(Magick::Image *image)
 
 void MainWindow::composingFinished()
 {
-    ui->progressBar->hide();
-    ui->progressBar->setValue(0);
+    progress_bar->hide();
+    progress_bar->setValue(0);
 }
 
 
@@ -294,4 +310,19 @@ void MainWindow::on_action_About_triggered()
                                                    "From: %2").arg(APP_REVISION).arg(QString::fromLocal8Bit(BUILDDATE)));
 }
 
+void MainWindow::slot_compositeSelected()
+{
+    compositeSelected(); // TODO: Doesn't redraw all. If selection only added, then add them to current preview.
+    // If deselected.size()>0 then redraw all
+}
 
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+//    if (maybeSave()) {
+//        writeSettings();
+//        event->accept();
+//    } else {
+//        event->ignore();
+//    }
+    stopped = true;
+}

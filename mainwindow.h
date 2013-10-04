@@ -9,6 +9,7 @@
 #include <QGraphicsPixmapItem>
 #include <QItemSelection>
 #include <Magick++.h>
+#include <QProgressBar>
 
 namespace Ui {
 class MainWindow;
@@ -58,6 +59,11 @@ private slots:
 
     void on_action_About_triggered();
 
+    void slot_compositeSelected();
+
+protected:
+    void closeEvent(QCloseEvent *event);
+
 private:
 
     void compositeSelected();
@@ -73,6 +79,8 @@ private:
 
     volatile bool stopped;
     Magick::Image preview_image;
+
+    QProgressBar *progress_bar;
 
 
     QVector<int> chunkSizes(const int size, const int chunkCount)
