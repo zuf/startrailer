@@ -50,6 +50,8 @@ private slots:
     void composingFinished();
 
 
+    void on_action_Save_as_triggered();
+
 private:
     void checkIfDone();
 

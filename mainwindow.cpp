@@ -13,6 +13,7 @@
 #include <QThread>
 #include <QMutex>
 #include <Magick++.h>
+#include <QFileDialog>
 
 #include "compositetrailstask.h"
 
@@ -240,6 +241,7 @@ void MainWindow::receiveMagickImage(Magick::Image *image)
     st.compose_first_with_second(&preview_image, image);
     drawMagickImage(preview_image);
     delete image;
+    ui->action_Save_as->setEnabled(true);
     mutex.unlock();
 }
 
@@ -250,3 +252,11 @@ void MainWindow::composingFinished()
 }
 
 
+
+void MainWindow::on_action_Save_as_triggered()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"),
+                               model->filePath(ui->filesList->rootIndex()),
+                               tr("Images (*.png *.jpg *.tif *.bmp)"));
+    preview_image.write(fileName.toStdString());
+}
