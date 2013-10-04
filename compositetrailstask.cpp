@@ -13,6 +13,8 @@ CompositeTrailsTask::~CompositeTrailsTask()
 void CompositeTrailsTask::run()
 {
     qDebug() << "CompositeTrailsTask::run() starts";
+    if (*m_stopped)
+        return;
 
     int counter = 0;    
     StarTrailer st;
@@ -27,11 +29,14 @@ void CompositeTrailsTask::run()
         // composite image
         m_out_image->composite(image, 0, 0, Magick::LightenCompositeOp);
 
-        ++counter;        
+        ++counter;
+
+        if (*m_stopped)
+            return;
 
         // set progress
         QMetaObject::invokeMethod(m_receiver, "announceProgress", Qt::QueuedConnection, Q_ARG(int, counter));        
-        if (counter%20==0)
+        if (counter%5==0)
             QMetaObject::invokeMethod(m_receiver, "receiveMagickImage", Qt::QueuedConnection, Q_ARG(Magick::Image*, (new Magick::Image(*m_out_image))));
     }
 
