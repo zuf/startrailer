@@ -192,9 +192,12 @@ void MainWindow::compositeSelected()
         preview_image.read(files[0].toStdString());
         for (int n=0; n<sizes.size(); n++)
         {
-            CompositeTrailsTask *task = new CompositeTrailsTask(this, &stopped, files.mid(offset, sizes[n]));
-            QThreadPool::globalInstance()->start(task);
-            offset += sizes[n];
+            if (sizes[n]>0)
+            {
+                CompositeTrailsTask *task = new CompositeTrailsTask(this, &stopped, files.mid(offset, sizes[n]));
+                QThreadPool::globalInstance()->start(task);
+                offset += sizes[n];
+            }
         }
     }
     else
@@ -209,7 +212,7 @@ void MainWindow::compositeSelected()
 void MainWindow::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
     compositeSelected(); // TODO: Doesn't redraw all. If selection only added, then add them to current preview.
-                         // If deselected.size()>0 then redraw all
+    // If deselected.size()>0 then redraw all
 }
 
 void MainWindow::drawMagickImage(Magick::Image image)
@@ -272,8 +275,8 @@ void MainWindow::composingFinished()
 void MainWindow::on_action_Save_as_triggered()
 {
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"),
-                               model->filePath(ui->filesList->rootIndex()),
-                               tr("Images (*.png *.jpg *.tif *.bmp)"));
+                                                    model->filePath(ui->filesList->rootIndex()),
+                                                    tr("Images (*.png *.jpg *.tif *.bmp)"));
     preview_image.write(fileName.toStdString());
 }
 
