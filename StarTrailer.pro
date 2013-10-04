@@ -34,3 +34,6 @@ PKGCONFIG += Magick++
 #LIBS+=-lgomp
 
 #QMAKE_CXXFLAGS_RELEASE += -O2
+
+OTHER_FILES += \
+    README.md
