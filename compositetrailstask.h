@@ -12,7 +12,7 @@ public:
                                  volatile bool *stopped, const QStringList &files)
         : m_receiver(receiver), m_stopped(stopped),
           m_sourceFiles(files), m_out_image(new Magick::Image(files.first().toStdString()))
-    {}
+    {*m_stopped=false;}
 
     Magick::Image const *getImage(){ return m_out_image;}
 

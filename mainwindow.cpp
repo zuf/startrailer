@@ -59,6 +59,9 @@ MainWindow::MainWindow(QWidget *parent) :
     item->setTransformationMode(Qt::SmoothTransformation);
 
     ui->splitter->setStretchFactor(1, 10);
+
+    QObject::connect(ui->filesList->selectionModel(), &QItemSelectionModel::selectionChanged,
+                     this, &MainWindow::selectionChanged);
 }
 
 MainWindow::~MainWindow()
@@ -121,50 +124,7 @@ void MainWindow::on_actionBack_triggered()
 
 void MainWindow::on_actionComposite_triggered()
 {
-    qDebug() << "Start composing...";
-
-    QElapsedTimer timer;
-    timer.start();
-
-    StarTrailer st;
-    //    const QByteArray *image_bytes = st.q_compose(model->filePath(list[0]).toStdString(), model->filePath(list[1]).toStdString());
-
-    //const QByteArray *image_bytes = st.q_compose_model_list(model, ui->filesList->selectionModel()->selectedIndexes());
-
-    QStringList files;
-
-    QListIterator<QModelIndex> i(ui->filesList->selectionModel()->selectedRows(0));
-    if (i.hasNext())
-    {
-        while (i.hasNext())
-        {
-            files << model->filePath(i.next());
-        }
-
-        //qDebug() << "Files: " << files;
-        qDebug() << "files.count(): " << files.count();
-
-        QVector<int> sizes = chunkSizes(files.count(), QThread::idealThreadCount());
-        qDebug() << "schunk sizes: " << sizes;
-
-        ui->progressBar->setMaximum(files.size());
-        ui->progressBar->setValue(0);
-        ui->progressBar->show();
-        stopped = false;
-        int offset=0;
-        preview_image.read(files[0].toStdString());
-        for (int n=0; n<sizes.size(); n++)
-        {
-            CompositeTrailsTask *task = new CompositeTrailsTask(this, &stopped, files.mid(offset, sizes[n]));
-            QThreadPool::globalInstance()->start(task);
-            offset += sizes[n];
-        }
-    }
-    else
-    {
-        QMessageBox::information(this, tr("No files selected"), tr("Please select files to composite."));
-    }
-    qDebug() << "---------------------------\n";
+    compositeSelected();
 }
 
 void MainWindow::on_filesList_clicked(const QModelIndex &index)
@@ -191,9 +151,65 @@ void MainWindow::on_filesList_clicked(const QModelIndex &index)
     ui->statusBar->showMessage(tr("Selected: %1").arg(ui->filesList->selectionModel()->selectedRows().count()));
 }
 
-void MainWindow::checkIfDone()
+void MainWindow::compositeSelected()
 {
+    static QMutex mutex;
+    mutex.lock();
+    stopped = true;
+    QThreadPool::globalInstance()->waitForDone();
+    qDebug() << "Start composing...";
 
+    QElapsedTimer timer;
+    timer.start();
+
+    StarTrailer st;
+    //    const QByteArray *image_bytes = st.q_compose(model->filePath(list[0]).toStdString(), model->filePath(list[1]).toStdString());
+
+    //const QByteArray *image_bytes = st.q_compose_model_list(model, ui->filesList->selectionModel()->selectedIndexes());
+
+    QStringList files;
+
+    QModelIndexList selected_rows = ui->filesList->selectionModel()->selectedRows(0);
+
+    QListIterator<QModelIndex> i(selected_rows);
+    if (selected_rows.size()>1 && i.hasNext())
+    {
+        while (i.hasNext())
+        {
+            files << model->filePath(i.next());
+        }
+
+        //qDebug() << "Files: " << files;
+        qDebug() << "files.count(): " << files.count();
+
+        QVector<int> sizes = chunkSizes(files.count(), QThread::idealThreadCount());
+        qDebug() << "schunk sizes: " << sizes;
+
+        ui->progressBar->setMaximum(files.size());
+        ui->progressBar->setValue(0);
+        ui->progressBar->show();
+        int offset=0;
+        preview_image.read(files[0].toStdString());
+        for (int n=0; n<sizes.size(); n++)
+        {
+            CompositeTrailsTask *task = new CompositeTrailsTask(this, &stopped, files.mid(offset, sizes[n]));
+            QThreadPool::globalInstance()->start(task);
+            offset += sizes[n];
+        }
+    }
+    else
+    {
+        //QMessageBox::information(this, tr("No files selected"), tr("Please select files to composite."));
+        ui->statusBar->showMessage(tr("Please select files to composite."), 3000);
+    }
+    qDebug() << "---------------------------\n";
+    mutex.unlock();
+}
+
+void MainWindow::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
+{
+    compositeSelected(); // TODO: Doesn't redraw all. If selection only added, then add them to current preview.
+                         // If deselected.size()>0 then redraw all
 }
 
 void MainWindow::drawMagickImage(Magick::Image image)
@@ -274,3 +290,5 @@ void MainWindow::on_action_About_triggered()
                                                    "Git: %1<br>"
                                                    "From: %2").arg(APP_REVISION).arg(QString::fromLocal8Bit(BUILDDATE)));
 }
+
+

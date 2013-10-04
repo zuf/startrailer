@@ -7,7 +7,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QGraphicsPixmapItem>
-
+#include <QItemSelection>
 #include <Magick++.h>
 
 namespace Ui {
@@ -35,6 +35,8 @@ private slots:
     void on_filesList_clicked(const QModelIndex &index);
 
 
+    void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+
     void composing_finished(){
 
     }
@@ -57,7 +59,9 @@ private slots:
     void on_action_About_triggered();
 
 private:
-    void checkIfDone();
+
+    void compositeSelected();
+
 
     void drawMagickImage(Magick::Image image);
 
@@ -69,6 +73,7 @@ private:
 
     volatile bool stopped;
     Magick::Image preview_image;
+
 
     QVector<int> chunkSizes(const int size, const int chunkCount)
     {
