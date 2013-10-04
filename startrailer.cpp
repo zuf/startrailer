@@ -58,10 +58,9 @@ const QByteArray *StarTrailer::image_to_qbyte_array(Magick::Image *image)
 const QByteArray *StarTrailer::image_to_qbyte_array(Magick::Image &image)
 {
     image.magick("BMP");
-    Magick::Blob *blob = new Magick::Blob();
-    image.write(blob);
-    const QByteArray *image_data = new QByteArray((char*)(blob->data()), blob->length());
-    delete blob;
+    Magick::Blob blob;
+    image.write(&blob);
+    const QByteArray *image_data = new QByteArray((char*)(blob.data()), blob.length());
     return image_data;
 }
 

@@ -8,6 +8,8 @@
 #include <QGraphicsView>
 #include <QGraphicsPixmapItem>
 
+#include <Magick++.h>
+
 namespace Ui {
 class MainWindow;
 }
@@ -41,15 +43,26 @@ private slots:
 
     void on_actionClearSelection_triggered();
 
+    void announceProgress(int counter);
+
+    void receiveMagickImage(Magick::Image *image);
+
+    void composingFinished();
+
 
 private:
     void checkIfDone();
+
+    void drawMagickImage(Magick::Image image);
 
     Ui::MainWindow *ui;
     QFileSystemModel *model;
 
     QGraphicsScene* scene;
     QGraphicsPixmapItem* item;
+
+    volatile bool stopped;
+    Magick::Image preview_image;
 
     QVector<int> chunkSizes(const int size, const int chunkCount)
     {

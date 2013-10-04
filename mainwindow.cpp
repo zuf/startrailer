@@ -11,8 +11,10 @@
 #include <QListIterator>
 #include <QtConcurrent/QtConcurrent>
 #include <QThread>
-
+#include <QMutex>
 #include <Magick++.h>
+
+#include "compositetrailstask.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -20,7 +22,9 @@ MainWindow::MainWindow(QWidget *parent) :
 {    
     ui->setupUi(this);
 
-    model = new QFileSystemModel;    
+    ui->progressBar->hide();
+
+    model = new QFileSystemModel;
 
     QString start_path = QDir::currentPath();
     QStringList cmdline_args = QCoreApplication::arguments();
@@ -37,7 +41,7 @@ MainWindow::MainWindow(QWidget *parent) :
     model->sort(0);
 
     ui->filesList->setModel(model);
-    ui->filesList->setSortingEnabled(true);    
+    ui->filesList->setSortingEnabled(true);
     ui->filesList->setRootIndex(model->index(start_path));
 
     item = new QGraphicsPixmapItem();
@@ -54,7 +58,6 @@ MainWindow::MainWindow(QWidget *parent) :
     item->setTransformationMode(Qt::SmoothTransformation);
 
     ui->splitter->setStretchFactor(1, 10);
-
 }
 
 MainWindow::~MainWindow()
@@ -65,13 +68,9 @@ MainWindow::~MainWindow()
     delete model;
 }
 
-QVector<int> sizes;
-int finished_runners = 0;
-QFuture<Magick::Image *> futuries[100]; // TODO: QList it
-QFutureWatcher<Magick::Image *> watchers[100]; // TODO: QList it
-
 void MainWindow::handleFinished()
 {
+    static int finished_runners = 0;
     ++finished_runners;
     qDebug() << "handleFinished(): " << finished_runners;
 
@@ -79,40 +78,10 @@ void MainWindow::handleFinished()
     {
         finished_runners=0;
         StarTrailer st;
-        Magick::Image *out = 0;
-        qDebug() << "sizes.size(): " << sizes.size();
-        for (int i=0; i<sizes.size();++i)
-        {
-            qDebug() << "Wait for QtConcurrent::run #" << i ;
-            Magick::Image *img = futuries[i].result();
-            futuries[i].waitForFinished ();
-            // TODO: Delete/reset future
-            if (out==0)
-            {
-                out = new Magick::Image(*img);
-            }
-            else
-            {
-                st.compose_first_with_second(out, img);
-            }
-            delete img;
-        }
-        const QByteArray *image_bytes = st.image_to_qbyte_array(out);
-        delete out;
 
-        qDebug() << "Start format image for Qt";
 
-        QPixmap qpm;
-        qpm.loadFromData(*image_bytes);
-
-        qDebug() << "QPixmap loaded";
-
-        delete image_bytes;
-
-        item->setPixmap(qpm);
-        ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
+        //drawMagickImage(out);
     }
-
 }
 
 void MainWindow::on_filesList_doubleClicked(const QModelIndex &index)
@@ -123,7 +92,7 @@ void MainWindow::on_filesList_doubleClicked(const QModelIndex &index)
     {
         ui->filesList->setRootIndex(index);
         model->setRootPath(model->filePath(index));
-        model->sort(0);        
+        model->sort(0);
     }
     else
     {
@@ -131,7 +100,7 @@ void MainWindow::on_filesList_doubleClicked(const QModelIndex &index)
         QMimeType mimeType;
         mimeType = mimeDatabase.mimeTypeForFile(path);
 
-        QImage image(path);        
+        QImage image(path);
         item->setPixmap(QPixmap::fromImage(image));
         item->setTransformationMode(Qt::SmoothTransformation);
         ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
@@ -154,41 +123,47 @@ void MainWindow::on_actionComposite_triggered()
     qDebug() << "Start composing...";
 
     QElapsedTimer timer;
-    timer.start();    
+    timer.start();
 
     StarTrailer st;
-//    const QByteArray *image_bytes = st.q_compose(model->filePath(list[0]).toStdString(), model->filePath(list[1]).toStdString());
+    //    const QByteArray *image_bytes = st.q_compose(model->filePath(list[0]).toStdString(), model->filePath(list[1]).toStdString());
 
     //const QByteArray *image_bytes = st.q_compose_model_list(model, ui->filesList->selectionModel()->selectedIndexes());
 
     QStringList files;
-    QListIterator<QModelIndex> i(ui->filesList->selectionModel()->selectedIndexes());
-    while (i.hasNext())
+
+    QListIterator<QModelIndex> i(ui->filesList->selectionModel()->selectedRows(0));
+    if (i.hasNext())
     {
-        files << model->filePath(i.next());
+        while (i.hasNext())
+        {
+            files << model->filePath(i.next());
+        }
+
+        //qDebug() << "Files: " << files;
+        qDebug() << "files.count(): " << files.count();
+
+        QVector<int> sizes = chunkSizes(files.count(), QThread::idealThreadCount());
+        qDebug() << "schunk sizes: " << sizes;
+
+        ui->progressBar->setMaximum(files.size());
+        ui->progressBar->setValue(0);
+        ui->progressBar->show();
+        stopped = false;
+        int offset=0;
+        preview_image.read(files[0].toStdString());
+        for (int n=0; n<sizes.size(); n++)
+        {
+            CompositeTrailsTask *task = new CompositeTrailsTask(this, &stopped, files.mid(offset, sizes[n]));
+            QThreadPool::globalInstance()->start(task);
+            offset += sizes[n];
+        }
     }
-
-    sizes = chunkSizes(files.count(), QThread::idealThreadCount());
-
-    qDebug() << "schunk sizes: " << sizes;
-
-    //const QByteArray *image_bytes = st.q_compose_list_and_return_qbyte_array(files);
-    int offset = 0;    
-    int n=0;    
-    finished_runners = 0;
-    foreach (const int chunkSize, sizes) {
-        bool connected = connect(&watchers[n], SIGNAL(finished()), this, SLOT(handleFinished()));
-        qDebug() << "connected: " << connected;
-        futuries[n]= QtConcurrent::run(&st, &StarTrailer::compose_list, files.mid(offset, chunkSize));        
-        watchers[n].setFuture(futuries[n]);        
-        qDebug() << "QtConcurrent::run #" << n  ;
-        ++n;        
-        offset += chunkSize;        
+    else
+    {
+        QMessageBox::information(this, tr("No files selected"), tr("Please select files to composite."));
     }
-
-    qDebug() << "---------------------------";
-
-
+    qDebug() << "---------------------------\n";
 }
 
 void MainWindow::on_filesList_clicked(const QModelIndex &index)
@@ -196,28 +171,46 @@ void MainWindow::on_filesList_clicked(const QModelIndex &index)
     QString path = model->filePath(index);
     //        qDebug() << path;
 
-            QMimeDatabase mimeDatabase;
-            QMimeType mimeType;
-            mimeType = mimeDatabase.mimeTypeForFile(path);
+    QMimeDatabase mimeDatabase;
+    QMimeType mimeType;
+    mimeType = mimeDatabase.mimeTypeForFile(path);
     //        qDebug() << mimeType.name();
     //        qDebug() << "Valid: " << mimeType.isValid();
 
-            QImage image(path);
-            if (item)
-              delete item;
-            item = new QGraphicsPixmapItem(QPixmap::fromImage(image));
-            scene->addItem(item);
-            ui->graphicsView->setScene(scene);
-            item->setTransformationMode(Qt::SmoothTransformation);
-            ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
-            //        qDebug() << model->filePath(model->parent(ui->filesList->rootIndex()));
+    QImage image(path);
+    if (item)
+        delete item;
+    item = new QGraphicsPixmapItem(QPixmap::fromImage(image));
+    scene->addItem(item);
+    ui->graphicsView->setScene(scene);
+    item->setTransformationMode(Qt::SmoothTransformation);
+    ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
+    //        qDebug() << model->filePath(model->parent(ui->filesList->rootIndex()));
 
-            ui->statusBar->showMessage(tr("Selected: %1").arg(ui->filesList->selectionModel()->selectedRows().count()));
+    ui->statusBar->showMessage(tr("Selected: %1").arg(ui->filesList->selectionModel()->selectedRows().count()));
 }
 
 void MainWindow::checkIfDone()
 {
 
+}
+
+void MainWindow::drawMagickImage(Magick::Image image)
+{
+    StarTrailer st;
+    const QByteArray *image_bytes = st.image_to_qbyte_array(image);
+
+    qDebug() << "Start format image for Qt";
+
+    QPixmap qpm;
+    qpm.loadFromData(*image_bytes);
+
+    qDebug() << "QPixmap loaded";
+
+    delete image_bytes;
+
+    item->setPixmap(qpm);
+    ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
 }
 
 
@@ -230,6 +223,30 @@ void MainWindow::on_actionClearSelection_triggered()
 {
     ui->filesList->selectionModel()->clearSelection();
     ui->statusBar->showMessage(tr("Selection cleared"), 5000);
+}
+
+void MainWindow::announceProgress(int counter)
+{
+    ui->progressBar->setValue( ui->progressBar->value() + 1 );
+}
+
+void MainWindow::receiveMagickImage(Magick::Image *image)
+{
+    static QMutex mutex;
+    mutex.lock();
+    qDebug() << "receiveMagickImage()";
+    StarTrailer st;
+
+    st.compose_first_with_second(&preview_image, image);
+    drawMagickImage(preview_image);
+    delete image;
+    mutex.unlock();
+}
+
+void MainWindow::composingFinished()
+{
+    ui->progressBar->hide();
+    ui->progressBar->setValue(0);
 }
 
 

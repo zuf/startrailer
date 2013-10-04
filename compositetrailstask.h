@@ -24,7 +24,7 @@ private:
     QObject *m_receiver;
     volatile bool *m_stopped;
     const QStringList m_sourceFiles;
-    Magick::Image * const m_out_image;
+    Magick::Image * m_out_image;
 };
 
 #endif // COMPOSITETRAILSTASK_H
