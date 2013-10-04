@@ -260,3 +260,17 @@ void MainWindow::on_action_Save_as_triggered()
                                tr("Images (*.png *.jpg *.tif *.bmp)"));
     preview_image.write(fileName.toStdString());
 }
+
+void MainWindow::on_actionE_xit_triggered()
+{
+    QApplication::quit();
+}
+
+void MainWindow::on_action_About_triggered()
+{
+    QMessageBox::about(this, tr("Startrailer"), tr("<h1>Startrailer</h1>"
+                                                   "Helps to make star trails from your photos.<br>"
+                                                   "<a href=\"https://github.com/zuf/startrailer\">https://github.com/zuf/startrailer</a><br><br>"
+                                                   "Git: %1<br>"
+                                                   "From: %2").arg(APP_REVISION).arg(QString::fromLocal8Bit(BUILDDATE)));
+}

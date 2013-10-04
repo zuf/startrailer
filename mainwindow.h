@@ -52,6 +52,10 @@ private slots:
 
     void on_action_Save_as_triggered();
 
+    void on_actionE_xit_triggered();
+
+    void on_action_About_triggered();
+
 private:
     void checkIfDone();
 

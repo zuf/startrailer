@@ -37,3 +37,11 @@ PKGCONFIG += Magick++
 
 OTHER_FILES += \
     README.md
+
+REVISION = $$system(git rev-parse HEAD)
+#DEFINES += APP_REVISION=$$REVISION
+DEFINES += APP_REVISION=\\\"$$REVISION\\\"
+
+BUILDDATE = $$system(date "+%Y%m%d%H%M")
+DEFINES += BUILDDATE=\\\"\"$$BUILDDATE\"\\\"
+
