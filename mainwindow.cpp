@@ -182,6 +182,8 @@ void MainWindow::compositeSelected()
             files << model->filePath(i.next());
         }
 
+        files.sort();
+
         //qDebug() << "Files: " << files;
         qDebug() << "files.count(): " << files.count();
 
@@ -275,7 +277,7 @@ void MainWindow::receiveMagickImage(Magick::Image *image)
 {
     static QMutex mutex;
     //mutex.lock();
-    qDebug() << "receiveMagickImage()";
+    //qDebug() << "receiveMagickImage()";
     //    StarTrailer st;
 
     st.compose_first_with_second(preview_image, image);
@@ -287,7 +289,7 @@ void MainWindow::receiveMagickImage(Magick::Image *image)
 
 void MainWindow::composingFinished()
 {
-    qDebug() << "QThreadPool::globalInstance()->activeThreadCount(): " << QThreadPool::globalInstance()->activeThreadCount();
+    //qDebug() << "QThreadPool::globalInstance()->activeThreadCount(): " << QThreadPool::globalInstance()->activeThreadCount();
     --started_threads;
     progress_bar->setValue( progress_bar->value() + 1 );
     if (started_threads<=0)
