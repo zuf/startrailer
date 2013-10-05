@@ -71,15 +71,100 @@
      <string>&amp;File</string>
     </property>
     <addaction name="action_Save_as"/>
+    <addaction name="separator"/>
     <addaction name="actionE_xit"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">
-     <string>&amp;Help</string>
+     <string>Help</string>
     </property>
     <addaction name="action_About"/>
    </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="actionAuto_trail_on_select"/>
+    <addaction name="actionLive_preview_while_composite"/>
+   </widget>
+   <widget class="QMenu" name="menuImage">
+    <property name="title">
+     <string>Image</string>
+    </property>
+    <widget class="QMenu" name="menuComposite_mode">
+     <property name="title">
+      <string>Composite mode</string>
+     </property>
+     <addaction name="actionAdd"/>
+     <addaction name="actionAtop"/>
+     <addaction name="actionBlend"/>
+     <addaction name="actionBumpmap"/>
+     <addaction name="actionClear"/>
+     <addaction name="actionColorize"/>
+     <addaction name="actionCopy"/>
+     <addaction name="actionCopyBlack"/>
+     <addaction name="actionCopyBlue"/>
+     <addaction name="actionCopyCyan"/>
+     <addaction name="actionCopyGreen"/>
+     <addaction name="actionCopyMagenta"/>
+     <addaction name="actionCopyOpacity"/>
+     <addaction name="actionCopyRed"/>
+     <addaction name="actionCopyYellow"/>
+     <addaction name="actionDArken"/>
+     <addaction name="actionDifference"/>
+     <addaction name="actionDisplace"/>
+     <addaction name="actionDissolve"/>
+     <addaction name="actionDstOver"/>
+     <addaction name="actionExclusion"/>
+     <addaction name="actionHardLight"/>
+     <addaction name="actionHue"/>
+     <addaction name="actionIn"/>
+     <addaction name="actionLighten"/>
+     <addaction name="actionLuminize"/>
+     <addaction name="actionMinus"/>
+     <addaction name="actionModulate"/>
+     <addaction name="actionMyltiply"/>
+     <addaction name="actionNo"/>
+     <addaction name="actionOut"/>
+     <addaction name="actionOver"/>
+     <addaction name="actionOverlay"/>
+     <addaction name="actionPlus"/>
+     <addaction name="actionSaturate"/>
+     <addaction name="actionScreen"/>
+     <addaction name="actionSoftLight"/>
+     <addaction name="actionSubtract"/>
+     <addaction name="actionThreshold"/>
+     <addaction name="actionXor"/>
+    </widget>
+    <widget class="QMenu" name="menuRAW_processing_mode">
+     <property name="title">
+      <string>RAW processing mode</string>
+     </property>
+     <addaction name="actionOnly_jpeg_preview"/>
+     <addaction name="actionLibraw_half_size"/>
+     <addaction name="actionLibraw_full_size"/>
+    </widget>
+    <addaction name="menuComposite_mode"/>
+    <addaction name="menuRAW_processing_mode"/>
+   </widget>
+   <widget class="QMenu" name="menuSelection">
+    <property name="title">
+     <string>Selection</string>
+    </property>
+    <addaction name="actionClear_2"/>
+    <addaction name="actionAll"/>
+    <addaction name="separator"/>
+    <addaction name="actionEach_2"/>
+    <addaction name="actionEach_5th"/>
+    <addaction name="actionEach_10th"/>
+    <addaction name="actionEach_25th"/>
+    <addaction name="actionEach_50th"/>
+    <addaction name="actionEach_100"/>
+   </widget>
    <addaction name="menu_File"/>
+   <addaction name="menuView"/>
+   <addaction name="menuSelection"/>
+   <addaction name="menuImage"/>
    <addaction name="menu_Help"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
@@ -145,6 +230,353 @@
   <action name="action_About">
    <property name="text">
     <string>&amp;About</string>
+   </property>
+  </action>
+  <action name="actionLighenIntencity">
+   <property name="text">
+    <string>LighenIntencity</string>
+   </property>
+  </action>
+  <action name="actionOnly_jpeg_preview">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Only jpeg preview</string>
+   </property>
+  </action>
+  <action name="actionLibraw_half_size">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Libraw half_size dcraw_process()</string>
+   </property>
+  </action>
+  <action name="actionLibraw_full_size">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Libraw full size dcraw_process()</string>
+   </property>
+  </action>
+  <action name="actionAdd_Atop_Blend_Bumpmap_Clear_Colorize_Copy_CopyBlack_CopyBlue_CopyCyan_CopyGreen_CopyMagenta_CopyOpacity_CopyRed_CopyYellow_Darken_Difference_Displace_Dissolve_DstOver_erator_Exclusion_HardLight_Hue_In_Lighten_Luminize_Minus_Modulate_Multiply_No_Out_Over_Overlay_Plus_Saturate_Screen_SoftLight_Subtract_Threshold_Undefined_Xor">
+   <property name="text">
+    <string>Add
+Atop
+Blend
+Bumpmap
+Clear
+Colorize
+Copy
+CopyBlack
+CopyBlue
+CopyCyan
+CopyGreen
+CopyMagenta
+CopyOpacity
+CopyRed
+CopyYellow
+Darken
+Difference
+Displace
+Dissolve
+DstOver
+erator
+Exclusion
+HardLight
+Hue
+In
+Lighten
+Luminize
+Minus
+Modulate
+Multiply
+No
+Out
+Over
+Overlay
+Plus
+Saturate
+Screen
+SoftLight
+Subtract
+Threshold
+Undefined
+Xor
+</string>
+   </property>
+  </action>
+  <action name="actionAdd">
+   <property name="text">
+    <string>Add</string>
+   </property>
+  </action>
+  <action name="actionAtop">
+   <property name="text">
+    <string>Atop</string>
+   </property>
+  </action>
+  <action name="actionBlend">
+   <property name="text">
+    <string>Blend</string>
+   </property>
+  </action>
+  <action name="actionBumpmap">
+   <property name="text">
+    <string>Bumpmap</string>
+   </property>
+  </action>
+  <action name="actionClear">
+   <property name="text">
+    <string>Clear</string>
+   </property>
+  </action>
+  <action name="actionColorize">
+   <property name="text">
+    <string>Colorize</string>
+   </property>
+  </action>
+  <action name="actionCopy">
+   <property name="text">
+    <string>Copy</string>
+   </property>
+  </action>
+  <action name="actionCopyBlack">
+   <property name="text">
+    <string>CopyBlack</string>
+   </property>
+  </action>
+  <action name="actionCopyBlue">
+   <property name="text">
+    <string>CopyBlue</string>
+   </property>
+  </action>
+  <action name="actionCopyCyan">
+   <property name="text">
+    <string>CopyCyan</string>
+   </property>
+  </action>
+  <action name="actionCopyGreen">
+   <property name="text">
+    <string>CopyGreen</string>
+   </property>
+  </action>
+  <action name="actionCopyMagenta">
+   <property name="text">
+    <string>CopyMagenta</string>
+   </property>
+  </action>
+  <action name="actionCopyOpacity">
+   <property name="text">
+    <string>CopyOpacity</string>
+   </property>
+  </action>
+  <action name="actionCopyRed">
+   <property name="text">
+    <string>CopyRed</string>
+   </property>
+  </action>
+  <action name="actionCopyYellow">
+   <property name="text">
+    <string>CopyYellow</string>
+   </property>
+  </action>
+  <action name="actionDArken">
+   <property name="text">
+    <string>Darken</string>
+   </property>
+  </action>
+  <action name="actionDifference">
+   <property name="text">
+    <string>Difference</string>
+   </property>
+  </action>
+  <action name="actionDisplace">
+   <property name="text">
+    <string>Displace</string>
+   </property>
+  </action>
+  <action name="actionDissolve">
+   <property name="text">
+    <string>Dissolve</string>
+   </property>
+  </action>
+  <action name="actionDstOver">
+   <property name="text">
+    <string>DstOver</string>
+   </property>
+  </action>
+  <action name="actionExclusion">
+   <property name="text">
+    <string>Exclusion</string>
+   </property>
+  </action>
+  <action name="actionHardLight">
+   <property name="text">
+    <string>HardLight</string>
+   </property>
+  </action>
+  <action name="actionHue">
+   <property name="text">
+    <string>Hue</string>
+   </property>
+  </action>
+  <action name="actionIn">
+   <property name="text">
+    <string>In</string>
+   </property>
+  </action>
+  <action name="actionLighten">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Lighten</string>
+   </property>
+  </action>
+  <action name="actionLuminize">
+   <property name="text">
+    <string>Luminize</string>
+   </property>
+  </action>
+  <action name="actionMinus">
+   <property name="text">
+    <string>Minus</string>
+   </property>
+  </action>
+  <action name="actionModulate">
+   <property name="text">
+    <string>Modulate</string>
+   </property>
+  </action>
+  <action name="actionMyltiply">
+   <property name="text">
+    <string>Myltiply</string>
+   </property>
+  </action>
+  <action name="actionNo">
+   <property name="text">
+    <string>No</string>
+   </property>
+  </action>
+  <action name="actionOut">
+   <property name="text">
+    <string>Out</string>
+   </property>
+  </action>
+  <action name="actionOver">
+   <property name="text">
+    <string>Over</string>
+   </property>
+  </action>
+  <action name="actionOverlay">
+   <property name="text">
+    <string>Overlay</string>
+   </property>
+  </action>
+  <action name="actionPlus">
+   <property name="text">
+    <string>Plus</string>
+   </property>
+  </action>
+  <action name="actionSaturate">
+   <property name="text">
+    <string>Saturate</string>
+   </property>
+  </action>
+  <action name="actionScreen">
+   <property name="text">
+    <string>Screen</string>
+   </property>
+  </action>
+  <action name="actionSoftLight">
+   <property name="text">
+    <string>SoftLight</string>
+   </property>
+  </action>
+  <action name="actionSubtract">
+   <property name="text">
+    <string>Subtract</string>
+   </property>
+  </action>
+  <action name="actionThreshold">
+   <property name="text">
+    <string>Threshold</string>
+   </property>
+  </action>
+  <action name="actionXor">
+   <property name="text">
+    <string>Xor</string>
+   </property>
+  </action>
+  <action name="actionAuto_trail_on_select">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Auto trail on select</string>
+   </property>
+  </action>
+  <action name="actionLive_preview_while_composite">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Live preview while composite</string>
+   </property>
+  </action>
+  <action name="actionClear_2">
+   <property name="text">
+    <string>Clear</string>
+   </property>
+  </action>
+  <action name="actionAll">
+   <property name="text">
+    <string>All</string>
+   </property>
+  </action>
+  <action name="actionEach_2">
+   <property name="text">
+    <string>Each 2nd</string>
+   </property>
+  </action>
+  <action name="actionEach_5th">
+   <property name="text">
+    <string>Each 5th</string>
+   </property>
+  </action>
+  <action name="actionEach_10th">
+   <property name="text">
+    <string>Each 10th</string>
+   </property>
+  </action>
+  <action name="actionEach_25th">
+   <property name="text">
+    <string>Each 25th</string>
+   </property>
+  </action>
+  <action name="actionEach_50th">
+   <property name="text">
+    <string>Each 50th</string>
+   </property>
+  </action>
+  <action name="actionEach_100">
+   <property name="text">
+    <string>Each 100</string>
    </property>
   </action>
  </widget>
