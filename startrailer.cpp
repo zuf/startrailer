@@ -4,7 +4,61 @@
 
 StarTrailer::StarTrailer()
 {    
+    iProcessor = new LibRaw();
+}
 
+StarTrailer::~StarTrailer()
+{
+    delete iProcessor;
+}
+
+Magick::Image *StarTrailer::read_image(const std::string &file)
+{
+    qDebug() << "start Magick::Image *StarTrailer::read_image(const std::string &file)";
+    Magick::Image *image;
+    QString q_file = QString::fromStdString(file);
+    mimeType = mimeDatabase.mimeTypeForFile(q_file);
+//    qDebug() << "mimeType: " << mimeType.name();
+//    qDebug() << "mimeDatabase.mimeTypeForFile(\"image/x-canon-cr2\" ): " << mimeDatabase.mimeTypeForName("image/x-canon-cr2" ).name();
+    if (mimeType.name().compare("image/x-canon-cr2" )==0)
+    {
+        iProcessor->open_file(file.c_str());
+        int result = iProcessor->unpack_thumb();
+
+        if (LIBRAW_SUCCESS!=result)
+        {
+            qDebug() << QString("Can't unpack thumbnail for file %1. Error: %2").arg(q_file).arg(iProcessor->strerror(result));
+        }
+
+        if (iProcessor->imgdata.thumbnail.tformat==LIBRAW_THUMBNAIL_JPEG)
+        {
+//            Magick::Blob *blob = new Magick::Blob(iProcessor->imgdata.thumbnail.thumb, iProcessor->imgdata.thumbnail.tlength);
+//            blob->updateNoCopy(iProcessor->imgdata.thumbnail.thumb, iProcessor->imgdata.thumbnail.tlength);
+//            image = new Magick::Image(*blob);
+//            delete blob;
+
+            // memory copied here
+            Magick::Blob blob(iProcessor->imgdata.thumbnail.thumb, iProcessor->imgdata.thumbnail.tlength);
+            image = new Magick::Image(blob);
+        }
+        else if (iProcessor->imgdata.thumbnail.tformat==LIBRAW_THUMBNAIL_BITMAP)
+        {
+            qDebug() << QString("Thumbnail format not supported: BITMAP [%1x%2]").arg(iProcessor->imgdata.thumbnail.twidth).arg(iProcessor->imgdata.thumbnail.theight);
+        }
+        else
+        {
+            qDebug() << QString("Thumbnail format: unknown or unsupported");
+        }
+
+        iProcessor->recycle();
+    }
+    else
+    {
+        image = new Magick::Image(file);
+    }
+
+    qDebug() << "end Magick::Image *StarTrailer::read_image(const std::string &file)";
+    return image;
 }
 
 Magick::Image *StarTrailer::compose_first_with_second(Magick::Image *first, Magick::Image *second)
@@ -77,7 +131,7 @@ Magick::Image *StarTrailer::compose_list(QStringList files)
         compose_first_with_second(out_image, tmp_image);
     }
 
-    delete tmp_image;    
+    delete tmp_image;
 
     return out_image;
 }

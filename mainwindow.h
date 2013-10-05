@@ -10,6 +10,7 @@
 #include <QItemSelection>
 #include <Magick++.h>
 #include <QProgressBar>
+#include <startrailer.h>
 
 namespace Ui {
 class MainWindow;
@@ -78,9 +79,12 @@ private:
     QGraphicsPixmapItem* item;
 
     volatile bool stopped;
-    Magick::Image preview_image;
+    Magick::Image *preview_image;
 
     QProgressBar *progress_bar;
+
+    StarTrailer st;
+    int started_threads;
 
 
     QVector<int> chunkSizes(const int size, const int chunkCount)

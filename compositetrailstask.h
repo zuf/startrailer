@@ -4,6 +4,7 @@
 #include <Magick++.h>
 #include <QRunnable>
 #include <QStringList>
+#include "startrailer.h"
 
 class CompositeTrailsTask : public QRunnable
 {
@@ -11,8 +12,11 @@ public:
     explicit CompositeTrailsTask(QObject *receiver,
                                  volatile bool *stopped, const QStringList &files)
         : m_receiver(receiver), m_stopped(stopped),
-          m_sourceFiles(files), m_out_image(new Magick::Image(files.first().toStdString()))
-    {*m_stopped=false;}
+          m_sourceFiles(files)
+    {
+        //m_out_image(new Magick::Image(files.first().toStdString()))
+        *m_stopped=false;        
+    }
 
     Magick::Image const *getImage(){ return m_out_image;}
 
@@ -25,6 +29,7 @@ private:
     volatile bool *m_stopped;
     const QStringList m_sourceFiles;
     Magick::Image * m_out_image;
+    StarTrailer *st;
 };
 
 #endif // COMPOSITETRAILSTASK_H

@@ -45,3 +45,5 @@ DEFINES += APP_REVISION=\\\"$$REVISION\\\"
 BUILDDATE = $$system(date "+%Y%m%d%H%M")
 DEFINES += BUILDDATE=\\\"\"$$BUILDDATE\"\\\"
 
+LIBS+=-lraw_r
+
