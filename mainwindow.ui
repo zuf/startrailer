@@ -30,6 +30,9 @@
        <property name="selectionBehavior">
         <enum>QAbstractItemView::SelectRows</enum>
        </property>
+       <property name="rootIsDecorated">
+        <bool>true</bool>
+       </property>
        <property name="uniformRowHeights">
         <bool>false</bool>
        </property>
@@ -88,12 +91,12 @@
      <property name="title">
       <string>Live preview while composite</string>
      </property>
-     <addaction name="actionEach_image"/>
-     <addaction name="actionEach_5th_2"/>
-     <addaction name="actionEach_10th_2"/>
-     <addaction name="actionEach_25th_2"/>
-     <addaction name="actionEach_50th_2"/>
-     <addaction name="actionEach_100th"/>
+     <addaction name="actionPreviewEach_image"/>
+     <addaction name="actionPreviewEach_5th_2"/>
+     <addaction name="actionPreviewEach_10th_2"/>
+     <addaction name="actionPreviewEach_25th_2"/>
+     <addaction name="actionPreviewEach_50th_2"/>
+     <addaction name="actionPreviewEach_100th"/>
     </widget>
     <addaction name="actionAuto_trail_on_select"/>
     <addaction name="menuLive_preview_while_composite"/>
@@ -165,12 +168,12 @@
     <addaction name="actionClear_2"/>
     <addaction name="actionAll"/>
     <addaction name="separator"/>
-    <addaction name="actionEach_2"/>
-    <addaction name="actionEach_5th"/>
-    <addaction name="actionEach_10th"/>
-    <addaction name="actionEach_25th"/>
-    <addaction name="actionEach_50th"/>
-    <addaction name="actionEach_100"/>
+    <addaction name="actionSelectEach_2"/>
+    <addaction name="actionSelectEach_5th"/>
+    <addaction name="actionSelectEach_10th"/>
+    <addaction name="actionSelectEach_25th"/>
+    <addaction name="actionSelectEach_50th"/>
+    <addaction name="actionSelectEach_100"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuView"/>
@@ -549,62 +552,62 @@ Xor
     <string>All</string>
    </property>
   </action>
-  <action name="actionEach_2">
+  <action name="actionSelectEach_2">
    <property name="text">
     <string>Each 2nd</string>
    </property>
   </action>
-  <action name="actionEach_5th">
+  <action name="actionSelectEach_5th">
    <property name="text">
     <string>Each 5th</string>
    </property>
   </action>
-  <action name="actionEach_10th">
+  <action name="actionSelectEach_10th">
    <property name="text">
     <string>Each 10th</string>
    </property>
   </action>
-  <action name="actionEach_25th">
+  <action name="actionSelectEach_25th">
    <property name="text">
     <string>Each 25th</string>
    </property>
   </action>
-  <action name="actionEach_50th">
+  <action name="actionSelectEach_50th">
    <property name="text">
     <string>Each 50th</string>
    </property>
   </action>
-  <action name="actionEach_100">
+  <action name="actionSelectEach_100">
    <property name="text">
     <string>Each 100</string>
    </property>
   </action>
-  <action name="actionEach_image">
+  <action name="actionPreviewEach_image">
    <property name="text">
     <string>Each image</string>
    </property>
   </action>
-  <action name="actionEach_5th_2">
+  <action name="actionPreviewEach_5th_2">
    <property name="text">
     <string>Each 5th</string>
    </property>
   </action>
-  <action name="actionEach_10th_2">
+  <action name="actionPreviewEach_10th_2">
    <property name="text">
     <string>Each 10th</string>
    </property>
   </action>
-  <action name="actionEach_25th_2">
+  <action name="actionPreviewEach_25th_2">
    <property name="text">
     <string>Each 25th</string>
    </property>
   </action>
-  <action name="actionEach_50th_2">
+  <action name="actionPreviewEach_50th_2">
    <property name="text">
     <string>Each 50th</string>
    </property>
   </action>
-  <action name="actionEach_100th">
+  <action name="actionPreviewEach_100th">
    <property name="text">
     <string>Each 100th</string>
    </property>

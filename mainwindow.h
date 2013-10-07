@@ -66,6 +66,18 @@ private slots:
 
     void on_actionAll_triggered();
 
+    void on_actionSelectEach_2_triggered();
+
+    void on_actionSelectEach_5th_triggered();
+
+    void on_actionSelectEach_10th_triggered();
+
+    void on_actionSelectEach_25th_triggered();
+
+    void on_actionSelectEach_50th_triggered();
+
+    void on_actionSelectEach_100_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -73,6 +85,7 @@ private:
 
     void compositeSelected();
 
+    void selectEachNRow(int n);
 
     void drawMagickImage(Magick::Image image);
 

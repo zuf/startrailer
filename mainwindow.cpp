@@ -179,7 +179,9 @@ void MainWindow::compositeSelected()
     {
         while (i.hasNext())
         {
-            files << model->filePath(i.next());
+            QModelIndex index = i.next();
+            if (!model->isDir(index))
+                files << model->filePath(index);
         }
 
         files.sort();
@@ -227,6 +229,18 @@ void MainWindow::compositeSelected()
     }
     qDebug() << "---------------------------\n";
     mutex.unlock();
+}
+
+void MainWindow::selectEachNRow(int n)
+{
+    QItemSelection selection;
+    int row=0;
+    while(ui->filesList->rootIndex().child(row, 0).isValid())
+    {
+        selection.append(QItemSelectionRange(ui->filesList->rootIndex().child(row, 0)));
+        row+=n;
+    }
+    ui->filesList->selectionModel()->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
 }
 
 void MainWindow::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
@@ -366,3 +380,33 @@ void MainWindow::on_actionAll_triggered()
     ui->filesList->selectAll();
 }
 
+
+void MainWindow::on_actionSelectEach_2_triggered()
+{
+    selectEachNRow(2);
+}
+
+void MainWindow::on_actionSelectEach_5th_triggered()
+{
+    selectEachNRow(5);
+}
+
+void MainWindow::on_actionSelectEach_10th_triggered()
+{
+    selectEachNRow(10);
+}
+
+void MainWindow::on_actionSelectEach_25th_triggered()
+{
+    selectEachNRow(25);
+}
+
+void MainWindow::on_actionSelectEach_50th_triggered()
+{
+    selectEachNRow(50);
+}
+
+void MainWindow::on_actionSelectEach_100_triggered()
+{
+    selectEachNRow(100);
+}
