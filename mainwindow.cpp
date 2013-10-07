@@ -325,6 +325,8 @@ void MainWindow::on_action_About_triggered()
 
 void MainWindow::slot_compositeSelected()
 {
+    progress_bar->hide();
+    progress_bar->setValue(0);
     if (ui->filesList->selectionModel()->selectedRows().size()==1)
     {
         QModelIndex index = ui->filesList->selectionModel()->selectedIndexes().first();
@@ -358,3 +360,9 @@ void MainWindow::on_actionClear_2_triggered()
     ui->filesList->selectionModel()->clearSelection();
     ui->statusBar->showMessage(tr("Selection cleared"), 5000);
 }
+
+void MainWindow::on_actionAll_triggered()
+{
+    ui->filesList->selectAll();
+}
+
