@@ -62,6 +62,8 @@ private slots:
 
     void slot_compositeSelected();
 
+    void on_actionClear_2_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
 

@@ -351,3 +351,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
     //    }
     stopped = true;
 }
+
+void MainWindow::on_actionClear_2_triggered()
+{
+    // TODO: Dry with toolbar button
+    ui->filesList->selectionModel()->clearSelection();
+    ui->statusBar->showMessage(tr("Selection cleared"), 5000);
+}

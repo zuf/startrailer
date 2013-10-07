@@ -84,8 +84,19 @@
     <property name="title">
      <string>View</string>
     </property>
+    <widget class="QMenu" name="menuLive_preview_while_composite">
+     <property name="title">
+      <string>Live preview while composite</string>
+     </property>
+     <addaction name="actionEach_image"/>
+     <addaction name="actionEach_5th_2"/>
+     <addaction name="actionEach_10th_2"/>
+     <addaction name="actionEach_25th_2"/>
+     <addaction name="actionEach_50th_2"/>
+     <addaction name="actionEach_100th"/>
+    </widget>
     <addaction name="actionAuto_trail_on_select"/>
-    <addaction name="actionLive_preview_while_composite"/>
+    <addaction name="menuLive_preview_while_composite"/>
    </widget>
    <widget class="QMenu" name="menuImage">
     <property name="title">
@@ -528,17 +539,6 @@ Xor
     <string>Auto trail on select</string>
    </property>
   </action>
-  <action name="actionLive_preview_while_composite">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Live preview while composite</string>
-   </property>
-  </action>
   <action name="actionClear_2">
    <property name="text">
     <string>Clear</string>
@@ -577,6 +577,36 @@ Xor
   <action name="actionEach_100">
    <property name="text">
     <string>Each 100</string>
+   </property>
+  </action>
+  <action name="actionEach_image">
+   <property name="text">
+    <string>Each image</string>
+   </property>
+  </action>
+  <action name="actionEach_5th_2">
+   <property name="text">
+    <string>Each 5th</string>
+   </property>
+  </action>
+  <action name="actionEach_10th_2">
+   <property name="text">
+    <string>Each 10th</string>
+   </property>
+  </action>
+  <action name="actionEach_25th_2">
+   <property name="text">
+    <string>Each 25th</string>
+   </property>
+  </action>
+  <action name="actionEach_50th_2">
+   <property name="text">
+    <string>Each 50th</string>
+   </property>
+  </action>
+  <action name="actionEach_100th">
+   <property name="text">
+    <string>Each 100th</string>
    </property>
   </action>
  </widget>
