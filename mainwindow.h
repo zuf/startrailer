@@ -78,6 +78,8 @@ private slots:
 
     void on_actionSelectEach_100_triggered();
 
+    void on_actionAbout_Qt_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
 

@@ -410,3 +410,8 @@ void MainWindow::on_actionSelectEach_100_triggered()
 {
     selectEachNRow(100);
 }
+
+void MainWindow::on_actionAbout_Qt_triggered()
+{
+    QMessageBox::aboutQt(this);
+}
