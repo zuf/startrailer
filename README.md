@@ -1,6 +1,18 @@
 # StarTrailer
 ## helps you to make star trails from your photos
 
+
+> **This software are still at very early stage.**
+
+
+### Benefits
+
+* Can read and composite RAW files with libraw. Useful for making previews of your shots before you start processing RAWs in your favourite processing software.
+* Reads many formats (with ImageMagick).
+* Can composite images with different methods (which ImageMagick support).
+* Ability to take fast previews of star trails or time lapse.
+
+
 ![StarTrailer screenshot][1]
 
 ### Built with
@@ -9,9 +21,15 @@
 * Libraw - http://www.libraw.su/
 * Qt - http://qt-project.org/
 
-### How to make star trails without this software
+### License
 
-1. Write your own scrip that use `convert -composite` from ImageMagick. Like this one: https://gist.github.com/zuf/6825447
+Copyright (c) 2013 Egor Vakhromtsev MIT Licensed, see [LICENSE-MIT] for details.
+
+## FAQ
+
+#### How to make star trails without this software
+
+1. Write your own script that use `convert -composite` from ImageMagick. Like this one: https://gist.github.com/zuf/6825447
 2. If you are on windows try Startrails application: http://www.startrails.de/html/software.html
 
 
