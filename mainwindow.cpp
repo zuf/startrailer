@@ -147,12 +147,12 @@ void MainWindow::on_actionComposite_triggered()
 
 void MainWindow::on_filesList_clicked(const QModelIndex &index)
 {
-    QString path = model->filePath(index);
-    //        qDebug() << path;
+//    QString path = model->filePath(index);
+//    //        qDebug() << path;
 
-    QMimeDatabase mimeDatabase;
-    QMimeType mimeType;
-    mimeType = mimeDatabase.mimeTypeForFile(path);
+//    QMimeDatabase mimeDatabase;
+//    QMimeType mimeType;
+//    mimeType = mimeDatabase.mimeTypeForFile(path);
     //        qDebug() << mimeType.name();
     //        qDebug() << "Valid: " << mimeType.isValid();
 
@@ -165,7 +165,7 @@ void MainWindow::on_filesList_clicked(const QModelIndex &index)
     //    item->setTransformationMode(Qt::SmoothTransformation);
     //    ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
 
-    ui->statusBar->showMessage(tr("Selected: %1").arg(ui->filesList->selectionModel()->selectedRows().count()));
+
 }
 
 void MainWindow::compositeSelected()
@@ -353,6 +353,9 @@ void MainWindow::slot_compositeSelected()
 {
     progress_bar->hide();
     progress_bar->setValue(0);
+
+    ui->statusBar->showMessage(tr("Selected: %1").arg(ui->filesList->selectionModel()->selectedRows().count()));
+
     if (ui->filesList->selectionModel()->selectedRows().size()==1)
     {
         QModelIndex index = ui->filesList->selectionModel()->selectedIndexes().first();
