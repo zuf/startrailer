@@ -162,6 +162,7 @@
     </widget>
     <addaction name="menuComposite_mode"/>
     <addaction name="menuRAW_processing_mode"/>
+    <addaction name="actionComposite_2"/>
    </widget>
    <widget class="QMenu" name="menuSelection">
     <property name="title">
@@ -601,6 +602,11 @@
     <string>Without preview</string>
    </property>
   </action>
+  <action name="actionComposite_2">
+   <property name="text">
+    <string>Composite</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -611,5 +617,22 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>actionComposite_2</sender>
+   <signal>triggered()</signal>
+   <receiver>actionComposite</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
