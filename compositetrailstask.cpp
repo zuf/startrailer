@@ -58,7 +58,7 @@ void CompositeTrailsTask::run()
 
         // set progress
         QMetaObject::invokeMethod(m_receiver, "announceProgress", Qt::QueuedConnection, Q_ARG(int, counter));        
-        if (counter%5==0)
+        if (m_preview_each_n_image>0 && counter%m_preview_each_n_image==0)
             QMetaObject::invokeMethod(m_receiver, "receiveMagickImage", Qt::QueuedConnection, Q_ARG(Magick::Image*, (new Magick::Image(*m_out_image))));
 
     }

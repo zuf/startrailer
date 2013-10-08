@@ -10,6 +10,7 @@
 #include <QItemSelection>
 #include <Magick++.h>
 #include <QProgressBar>
+#include <QActionGroup>
 #include <startrailer.h>
 
 namespace Ui {
@@ -80,6 +81,20 @@ private slots:
 
     void on_actionAbout_Qt_triggered();
 
+    void on_actionPreviewEach_image_triggered();
+
+    void on_actionPreviewEach_5th_triggered();
+
+    void on_actionPreviewEach_10th_triggered();
+
+    void on_actionPreviewEach_25th_triggered();
+
+    void on_actionPreviewEach_50th_triggered();
+
+    void on_actionPreviewEach_100th_triggered();
+
+    void on_actionWithout_preview_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -104,7 +119,8 @@ private:
 
     StarTrailer st;
     int started_threads;
-
+    int preview_each_n_image;
+    QActionGroup* preview_each_n_group;
 
     QVector<int> chunkSizes(const int size, const int chunkCount)
     {

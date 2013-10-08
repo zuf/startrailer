@@ -92,11 +92,12 @@
      <property name="title">
       <string>Live preview while composite</string>
      </property>
+     <addaction name="actionWithout_preview"/>
      <addaction name="actionPreviewEach_image"/>
-     <addaction name="actionPreviewEach_5th_2"/>
-     <addaction name="actionPreviewEach_10th_2"/>
-     <addaction name="actionPreviewEach_25th_2"/>
-     <addaction name="actionPreviewEach_50th_2"/>
+     <addaction name="actionPreviewEach_5th"/>
+     <addaction name="actionPreviewEach_10th"/>
+     <addaction name="actionPreviewEach_25th"/>
+     <addaction name="actionPreviewEach_50th"/>
      <addaction name="actionPreviewEach_100th"/>
     </widget>
     <addaction name="actionAuto_trail_on_select"/>
@@ -277,53 +278,6 @@
    </property>
    <property name="text">
     <string>Libraw full size dcraw_process()</string>
-   </property>
-  </action>
-  <action name="actionAdd_Atop_Blend_Bumpmap_Clear_Colorize_Copy_CopyBlack_CopyBlue_CopyCyan_CopyGreen_CopyMagenta_CopyOpacity_CopyRed_CopyYellow_Darken_Difference_Displace_Dissolve_DstOver_erator_Exclusion_HardLight_Hue_In_Lighten_Luminize_Minus_Modulate_Multiply_No_Out_Over_Overlay_Plus_Saturate_Screen_SoftLight_Subtract_Threshold_Undefined_Xor">
-   <property name="text">
-    <string>Add
-Atop
-Blend
-Bumpmap
-Clear
-Colorize
-Copy
-CopyBlack
-CopyBlue
-CopyCyan
-CopyGreen
-CopyMagenta
-CopyOpacity
-CopyRed
-CopyYellow
-Darken
-Difference
-Displace
-Dissolve
-DstOver
-erator
-Exclusion
-HardLight
-Hue
-In
-Lighten
-Luminize
-Minus
-Modulate
-Multiply
-No
-Out
-Over
-Overlay
-Plus
-Saturate
-Screen
-SoftLight
-Subtract
-Threshold
-Undefined
-Xor
-</string>
    </property>
   </action>
   <action name="actionAdd">
@@ -584,31 +538,52 @@ Xor
    </property>
   </action>
   <action name="actionPreviewEach_image">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Each image</string>
    </property>
   </action>
-  <action name="actionPreviewEach_5th_2">
+  <action name="actionPreviewEach_5th">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Each 5th</string>
    </property>
   </action>
-  <action name="actionPreviewEach_10th_2">
+  <action name="actionPreviewEach_10th">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Each 10th</string>
    </property>
   </action>
-  <action name="actionPreviewEach_25th_2">
+  <action name="actionPreviewEach_25th">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Each 25th</string>
    </property>
   </action>
-  <action name="actionPreviewEach_50th_2">
+  <action name="actionPreviewEach_50th">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Each 50th</string>
    </property>
   </action>
   <action name="actionPreviewEach_100th">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Each 100th</string>
    </property>
@@ -616,6 +591,14 @@ Xor
   <action name="actionAbout_Qt">
    <property name="text">
     <string>About Qt</string>
+   </property>
+  </action>
+  <action name="actionWithout_preview">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Without preview</string>
    </property>
   </action>
  </widget>

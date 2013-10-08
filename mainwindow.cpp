@@ -68,6 +68,17 @@ MainWindow::MainWindow(QWidget *parent) :
     progress_bar->hide();
     ui->statusBar->addPermanentWidget(progress_bar);
     started_threads=0;
+
+    preview_each_n_image=1;
+
+    preview_each_n_group = new QActionGroup( this );
+    ui->actionPreviewEach_image->setActionGroup(preview_each_n_group);
+    ui->actionPreviewEach_5th->setActionGroup(preview_each_n_group);
+    ui->actionPreviewEach_10th->setActionGroup(preview_each_n_group);
+    ui->actionPreviewEach_25th->setActionGroup(preview_each_n_group);
+    ui->actionPreviewEach_50th->setActionGroup(preview_each_n_group);
+    ui->actionPreviewEach_100th->setActionGroup(preview_each_n_group);
+    ui->actionWithout_preview->setActionGroup(preview_each_n_group);
 }
 
 MainWindow::~MainWindow()
@@ -77,6 +88,7 @@ MainWindow::~MainWindow()
     //delete item;
     delete ui;
     delete model;
+    delete preview_each_n_group;
 }
 
 void MainWindow::handleFinished()
@@ -215,8 +227,8 @@ void MainWindow::compositeSelected()
         {
             if (sizes[n]>0)
             {
-                CompositeTrailsTask *task = new CompositeTrailsTask(this, &stopped, files.mid(offset, sizes[n]));
-                QThreadPool::globalInstance()->start(task);                                
+                CompositeTrailsTask *task = new CompositeTrailsTask(this, &stopped, files.mid(offset, sizes[n]), preview_each_n_image);
+                QThreadPool::globalInstance()->start(task);
                 ++started_threads;
                 offset += sizes[n];
             }
@@ -245,6 +257,7 @@ void MainWindow::selectEachNRow(int n)
 
 void MainWindow::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
+
     static QTimer *timer=0;
     if (timer)
     {
@@ -257,7 +270,6 @@ void MainWindow::selectionChanged(const QItemSelection &selected, const QItemSel
     timer->setSingleShot(true);
     connect(timer, SIGNAL(timeout()), this, SLOT(slot_compositeSelected()));
     timer->start(20);
-
 }
 
 void MainWindow::drawMagickImage(Magick::Image image)
@@ -352,7 +364,8 @@ void MainWindow::slot_compositeSelected()
     }
     else
     {
-        compositeSelected(); // TODO: Doesn't redraw all. If selection only added, then add them to current preview.
+        if (ui->actionAuto_trail_on_select->isChecked())
+            compositeSelected(); // TODO: Doesn't redraw all. If selection only added, then add them to current preview.
         // If deselected.size()>0 then redraw all
     }
 }
@@ -414,4 +427,39 @@ void MainWindow::on_actionSelectEach_100_triggered()
 void MainWindow::on_actionAbout_Qt_triggered()
 {
     QMessageBox::aboutQt(this);
+}
+
+void MainWindow::on_actionPreviewEach_image_triggered()
+{
+    preview_each_n_image = 1;
+}
+
+void MainWindow::on_actionPreviewEach_5th_triggered()
+{
+    preview_each_n_image = 5;
+}
+
+void MainWindow::on_actionPreviewEach_10th_triggered()
+{
+    preview_each_n_image = 10;
+}
+
+void MainWindow::on_actionPreviewEach_25th_triggered()
+{
+    preview_each_n_image = 25;
+}
+
+void MainWindow::on_actionPreviewEach_50th_triggered()
+{
+    preview_each_n_image = 50;
+}
+
+void MainWindow::on_actionPreviewEach_100th_triggered()
+{
+    preview_each_n_image = 100;
+}
+
+void MainWindow::on_actionWithout_preview_triggered()
+{
+    preview_each_n_image = 0;
 }

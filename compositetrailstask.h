@@ -10,9 +10,9 @@ class CompositeTrailsTask : public QRunnable
 {
 public:
     explicit CompositeTrailsTask(QObject *receiver,
-                                 volatile bool *stopped, const QStringList &files)
+                                 volatile bool *stopped, const QStringList &files, const int preview_each_n_image)
         : m_receiver(receiver), m_stopped(stopped),
-          m_sourceFiles(files)
+          m_sourceFiles(files), m_preview_each_n_image(preview_each_n_image)
     {
         //m_out_image(new Magick::Image(files.first().toStdString()))
         *m_stopped=false;        
@@ -25,6 +25,7 @@ public:
 private:
     void run();
 
+    const int m_preview_each_n_image;
     QObject *m_receiver;
     volatile bool *m_stopped;
     const QStringList m_sourceFiles;
