@@ -11,6 +11,7 @@
 * Reads many formats (with ImageMagick).
 * Can composite images with different methods (which ImageMagick support).
 * Ability to take fast previews of star trails or time lapse.
+* Cross platform. Should works on Linux, Mac and Windows.
 
 
 ![StarTrailer screenshot][1]
