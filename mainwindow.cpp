@@ -22,6 +22,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {    
     preview_image=0;
+    compose_op = Magick::LightenCompositeOp;
+
     ui->setupUi(this);
 
     //    ui->progressBar->hide();
@@ -205,7 +207,6 @@ void MainWindow::compositeSelected()
 
         qDebug() << "schunk sizes: " << sizes;
 
-
         progress_bar->setMaximum(files.size() + sizes.size() - sizes.count(0));
         progress_bar->setValue(0);
         progress_bar->show();
@@ -227,7 +228,7 @@ void MainWindow::compositeSelected()
         {
             if (sizes[n]>0)
             {
-                CompositeTrailsTask *task = new CompositeTrailsTask(this, &stopped, files.mid(offset, sizes[n]), preview_each_n_image);
+                CompositeTrailsTask *task = new CompositeTrailsTask(this, &stopped, files.mid(offset, sizes[n]), preview_each_n_image, compose_op);
                 QThreadPool::globalInstance()->start(task);
                 ++started_threads;
                 offset += sizes[n];
@@ -306,7 +307,7 @@ void MainWindow::receiveMagickImage(Magick::Image *image)
     //qDebug() << "receiveMagickImage()";
     //    StarTrailer st;
 
-    st.compose_first_with_second(preview_image, image);
+    st.compose_first_with_second(preview_image, image, compose_op);
     drawMagickImage(*preview_image);
     delete image;
     ui->action_Save_as->setEnabled(true);
@@ -469,5 +470,5 @@ void MainWindow::on_actionWithout_preview_triggered()
 
 void MainWindow::on_actionDifference_triggered()
 {
-
+    compose_op = Magick::DifferenceCompositeOp;
 }

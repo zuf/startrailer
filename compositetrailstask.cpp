@@ -45,7 +45,7 @@ void CompositeTrailsTask::run()
             return;
         // composite image
         //m_out_image->composite(image, 0, 0, Magick::LightenCompositeOp);
-        st->compose_first_with_second(m_out_image, image);
+        st->compose_first_with_second(m_out_image, image, m_compose_op);
 
         ++counter;
 

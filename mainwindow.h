@@ -120,9 +120,11 @@ private:
     QProgressBar *progress_bar;
 
     StarTrailer st;
+    Magick::CompositeOperator compose_op;
     int started_threads;
     int preview_each_n_image;
     QActionGroup* preview_each_n_group;
+
 
     QVector<int> chunkSizes(const int size, const int chunkCount)
     {
