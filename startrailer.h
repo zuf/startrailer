@@ -13,6 +13,23 @@
 
 //typedef QList<QModelIndex> QModelIndexList;
 
+namespace Magick
+{
+using MagickCore::DivideDstCompositeOp;
+  using MagickCore::DistortCompositeOp;
+  using MagickCore::BlurCompositeOp;
+  using MagickCore::PegtopLightCompositeOp;
+  using MagickCore::VividLightCompositeOp;
+  using MagickCore::PinLightCompositeOp;
+  using MagickCore::LinearDodgeCompositeOp;
+  using MagickCore::LinearBurnCompositeOp;
+  using MagickCore::MathematicsCompositeOp;
+  using MagickCore::DivideSrcCompositeOp;
+  using MagickCore::MinusSrcCompositeOp;
+  using MagickCore::DarkenIntensityCompositeOp;
+  using MagickCore::LightenIntensityCompositeOp;
+}
+
 class StarTrailer
 {
 public:

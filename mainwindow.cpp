@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {    
     preview_image=0;
-    compose_op = Magick::LightenCompositeOp;
+    compose_op = MagickCore::LightenIntensityCompositeOp;
 
     ui->setupUi(this);
 
