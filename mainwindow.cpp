@@ -466,3 +466,8 @@ void MainWindow::on_actionWithout_preview_triggered()
 {
     preview_each_n_image = 0;
 }
+
+void MainWindow::on_actionDifference_triggered()
+{
+
+}

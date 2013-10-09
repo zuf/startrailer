@@ -61,40 +61,40 @@ Magick::Image *StarTrailer::read_image(const std::string &file)
     return image;
 }
 
-Magick::Image *StarTrailer::compose_first_with_second(Magick::Image *first, Magick::Image *second)
+Magick::Image *StarTrailer::compose_first_with_second(Magick::Image *first, Magick::Image *second, const Magick::CompositeOperator compose_op)
 {
-    first->composite(*second, 0,0, Magick::LightenCompositeOp);
+    first->composite(*second, 0,0, compose_op);
     return first;
 }
 
-const Magick::Image *StarTrailer::compose(const Magick::Image &one, const Magick::Image &another)
+const Magick::Image *StarTrailer::compose(const Magick::Image &one, const Magick::Image &another, const Magick::CompositeOperator compose_op)
 {
     Magick::Image *copy_of_one = new Magick::Image(one);
-    copy_of_one->composite(another, 0,0, Magick::LightenCompositeOp);
+    copy_of_one->composite(another, 0,0, compose_op);
     return copy_of_one;
 }
 
-const Magick::Image *StarTrailer::compose(const Magick::Image &one, const std::string &another_image_path)
+const Magick::Image *StarTrailer::compose(const Magick::Image &one, const std::string &another_image_path, const Magick::CompositeOperator compose_op)
 {
     Magick::Image *copy_of_one = new Magick::Image(one);
     Magick::Image *another= new Magick::Image(another_image_path); // do not hope that it can be placed into stack
-    copy_of_one->composite(*another, 0,0, Magick::LightenCompositeOp);
+    copy_of_one->composite(*another, 0,0, compose_op);
     delete another;
     return copy_of_one; // now it not the copy of one but result one
 }
 
-const Magick::Image *StarTrailer::compose(const std::string &image_one_path, const std::string &another_image_path)
+const Magick::Image *StarTrailer::compose(const std::string &image_one_path, const std::string &another_image_path, const Magick::CompositeOperator compose_op)
 {
     Magick::Image *one = new Magick::Image(image_one_path);
     Magick::Image *another= new Magick::Image(another_image_path); // still not hope that it can be placed into stack ;)
-    one->composite(*another, 0,0, Magick::LightenCompositeOp);
+    one->composite(*another, 0,0, compose_op);
     delete another;
     return one;
 }
 
-const QByteArray *StarTrailer::q_compose(const std::string &image_one_path, const std::string &image_another_path)
+const QByteArray *StarTrailer::q_compose(const std::string &image_one_path, const std::string &image_another_path, const Magick::CompositeOperator compose_op)
 {    
-    Magick::Image *img = (Magick::Image *) compose(image_one_path, image_another_path);
+    Magick::Image *img = (Magick::Image *) compose(image_one_path, image_another_path, compose_op);
     img->magick("BMP");
     Magick::Blob *blob = new Magick::Blob();
     img->write(blob);
@@ -118,7 +118,7 @@ const QByteArray *StarTrailer::image_to_qbyte_array(Magick::Image &image)
     return image_data;
 }
 
-Magick::Image *StarTrailer::compose_list(QStringList files)
+Magick::Image *StarTrailer::compose_list(QStringList files, const Magick::CompositeOperator compose_op)
 {
     QStringList::const_iterator constIterator;
     Magick::Image *out_image = new Magick::Image((*files.constBegin()).toStdString());
@@ -128,7 +128,7 @@ Magick::Image *StarTrailer::compose_list(QStringList files)
         // TODO: Skip first iteration
         //std::out << "Trail file: " << (*constIterator).toStdString();
         tmp_image->read((*constIterator).toStdString());
-        compose_first_with_second(out_image, tmp_image);
+        compose_first_with_second(out_image, tmp_image, compose_op);
     }
 
     delete tmp_image;
@@ -136,16 +136,16 @@ Magick::Image *StarTrailer::compose_list(QStringList files)
     return out_image;
 }
 
-const QByteArray *StarTrailer::q_compose_list_and_return_qbyte_array(QStringList files)
+const QByteArray *StarTrailer::q_compose_list_and_return_qbyte_array(QStringList files, const Magick::CompositeOperator compose_op)
 {
-    Magick::Image *image = compose_list(files);
+    Magick::Image *image = compose_list(files, compose_op);
     const QByteArray *image_data = image_to_qbyte_array(image);
     delete image;
     return image_data;
 }
 
 
-const QByteArray *StarTrailer::q_compose_model_list(const QFileSystemModel *model, QModelIndexList list)
+const QByteArray *StarTrailer::q_compose_model_list(const QFileSystemModel *model, QModelIndexList list, const Magick::CompositeOperator compose_op)
 {
     QModelIndexList::const_iterator constIterator;
 
@@ -157,7 +157,7 @@ const QByteArray *StarTrailer::q_compose_model_list(const QFileSystemModel *mode
         //std::out << "Trail file: " << (*constIterator).toStdString();
         qDebug() << "Trail file: " << (model->filePath((*constIterator)));;
         tmp_image->read(model->filePath((*constIterator)).toStdString());
-        compose_first_with_second(out_image, tmp_image);
+        compose_first_with_second(out_image, tmp_image, compose_op);
     }
 
     delete tmp_image;

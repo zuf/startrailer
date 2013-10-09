@@ -95,6 +95,8 @@ private slots:
 
     void on_actionWithout_preview_triggered();
 
+    void on_actionDifference_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
 
