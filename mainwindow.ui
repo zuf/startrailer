@@ -195,6 +195,7 @@
    <addaction name="actionUpdateFileList"/>
    <addaction name="actionComposite"/>
    <addaction name="actionClearSelection"/>
+   <addaction name="actionPlay"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionBack">
@@ -605,6 +606,11 @@
   <action name="actionComposite_2">
    <property name="text">
     <string>Composite</string>
+   </property>
+  </action>
+  <action name="actionPlay">
+   <property name="text">
+    <string>Play (time lapse)</string>
    </property>
   </action>
  </widget>

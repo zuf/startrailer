@@ -41,12 +41,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     model->setRootPath(start_path);
     qDebug() << "QDir::currentPath(): " << start_path;
-    //model->setFilter( QDir::AllDirs | QDir::NoDotAndDotDot );
-    model->sort(0);
+    //model->setFilter( QDir::AllDirs | QDir::NoDotAndDotDot );   
+
 
     ui->filesList->setModel(model);
-    ui->filesList->setSortingEnabled(true);
-    ui->filesList->setRootIndex(model->index(start_path));
+    //ui->filesList->setSortingEnabled(true);
+    ui->filesList->setRootIndex(model->index(start_path));    
+    model->sort(0);
 
     item = new QGraphicsPixmapItem();
 
@@ -471,4 +472,42 @@ void MainWindow::on_actionWithout_preview_triggered()
 void MainWindow::on_actionDifference_triggered()
 {
     compose_op = Magick::DifferenceCompositeOp;
+}
+
+void MainWindow::on_actionPlay_triggered()
+{
+    stopped = true;
+    QThreadPool::globalInstance()->waitForDone();
+
+    QModelIndexList selected_rows = ui->filesList->selectionModel()->selectedRows(0);
+    QListIterator<QModelIndex> i(selected_rows);
+    if (selected_rows.size()>1 && i.hasNext())
+    {
+        stopped = false;
+        while (i.hasNext() && !stopped)
+        {
+            QModelIndex index = i.next();
+            if (!model->isDir(index))
+            {
+                //preview_image->read(model->filePath(index).toStdString());
+                if (preview_image)
+                    delete preview_image;
+                preview_image = st.read_image(model->filePath(index).toStdString());
+                if (stopped)
+                    return;
+                drawMagickImage(*preview_image);
+                if (stopped)
+                    return;
+                QCoreApplication::processEvents();
+                if (stopped)
+                    return;
+            }
+
+        }
+
+    }
+    else
+    {
+        ui->statusBar->showMessage(tr("Please select files to play."), 3000);
+    }
 }

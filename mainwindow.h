@@ -97,6 +97,8 @@ private slots:
 
     void on_actionDifference_triggered();
 
+    void on_actionPlay_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
 
