@@ -14,6 +14,7 @@
 #include <QMutex>
 #include <Magick++.h>
 #include <QFileDialog>
+#include "playbackreader.h"
 
 #include "compositetrailstask.h"
 
@@ -278,7 +279,7 @@ void MainWindow::drawMagickImage(Magick::Image image)
 {    
     const QByteArray *image_bytes = st.image_to_qbyte_array(image);
     QPixmap qpm;
-    qpm.loadFromData(*image_bytes);
+    qpm.loadFromData(*image_bytes);    
     delete image_bytes;
     item->setPixmap(qpm);
     ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
@@ -474,35 +475,76 @@ void MainWindow::on_actionDifference_triggered()
     compose_op = Magick::DifferenceCompositeOp;
 }
 
+
+
 void MainWindow::on_actionPlay_triggered()
 {
     stopped = true;
     QThreadPool::globalInstance()->waitForDone();
 
+    QStringList files;
     QModelIndexList selected_rows = ui->filesList->selectionModel()->selectedRows(0);
     QListIterator<QModelIndex> i(selected_rows);
+
+    static QQueue<const QByteArray*> images_bytes_queue;
+    static QMutex images_bytes_queue_mutex;
+
     if (selected_rows.size()>1 && i.hasNext())
     {
         stopped = false;
-        while (i.hasNext() && !stopped)
+        while (i.hasNext())
         {
             QModelIndex index = i.next();
             if (!model->isDir(index))
-            {
-                //preview_image->read(model->filePath(index).toStdString());
-                if (preview_image)
-                    delete preview_image;
-                preview_image = st.read_image(model->filePath(index).toStdString());
-                if (stopped)
-                    return;
-                drawMagickImage(*preview_image);
-                if (stopped)
-                    return;
-                QCoreApplication::processEvents();
-                if (stopped)
-                    return;
-            }
+                files << model->filePath(index);
+        }
 
+        files.sort();
+        QVector<int> sizes = chunkSizes(files.count(), QThread::idealThreadCount());
+
+
+        int offset=0;
+        if (preview_image)
+        {
+            delete preview_image;
+            preview_image=0;
+        }
+        preview_image = st.read_image(files[0].toStdString());
+
+        QThreadPool::globalInstance()->waitForDone();
+
+        started_threads=0;
+        for (int n=0; n<sizes.size(); n++)
+        {
+            if (sizes[n]>0)
+            {
+                //PlaybackReader *task = new PlaybackReader(&images_bytes_queue, &images_bytes_queue_mutex, files);
+                PlaybackReader *task = new PlaybackReader(&images_bytes_queue, &images_bytes_queue_mutex, files.mid(offset, sizes[n]));
+
+                QThreadPool::globalInstance()->start(task);
+                ++started_threads;
+                offset += sizes[n];
+            }
+        }
+
+        static int processed_files=0;
+        processed_files=0;
+        while(processed_files<files.size())
+        {
+            images_bytes_queue_mutex.lock();
+            if (images_bytes_queue.size()>1)
+            {
+                const QByteArray *image_bytes = images_bytes_queue.dequeue();
+                QPixmap qpm;
+                qpm.loadFromData(*image_bytes);
+                delete image_bytes;
+                item->setPixmap(qpm);
+                ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
+                delete image_bytes;
+                ++processed_files;
+            }
+            images_bytes_queue_mutex.unlock();
+            QApplication::processEvents();
         }
 
     }

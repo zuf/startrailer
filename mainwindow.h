@@ -12,6 +12,7 @@
 #include <QProgressBar>
 #include <QActionGroup>
 #include <startrailer.h>
+#include <QMutex>
 
 namespace Ui {
 class MainWindow;
@@ -126,7 +127,6 @@ private:
     int started_threads;
     int preview_each_n_image;
     QActionGroup* preview_each_n_group;
-
 
     QVector<int> chunkSizes(const int size, const int chunkCount)
     {

@@ -16,12 +16,14 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     startrailer.cpp \
     compositetrailstask.cpp \
-    view.cpp
+    view.cpp \
+    playbackreader.cpp
 
 HEADERS  += mainwindow.h \
     startrailer.h \
     compositetrailstask.h \
-    view.h
+    view.h \
+    playbackreader.h
 
 FORMS    += mainwindow.ui
 
