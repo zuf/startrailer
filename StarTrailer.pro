@@ -17,13 +17,17 @@ SOURCES += main.cpp\
     startrailer.cpp \
     compositetrailstask.cpp \
     view.cpp \
-    playbackreader.cpp
+    playbackreader.cpp \
+    image.cpp \
+    quteimage.cpp
 
 HEADERS  += mainwindow.h \
     startrailer.h \
     compositetrailstask.h \
     view.h \
-    playbackreader.h
+    playbackreader.h \
+    image.h \
+    quteimage.h
 
 FORMS    += mainwindow.ui
 
