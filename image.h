@@ -3,6 +3,9 @@
 
 #include <Magick++.h>
 #include "libraw/libraw.h"
+#include <iostream>
+#include <string>
+#include <stdexcept>
 
 ///
 /// \brief Image class provides interface to composite different images
@@ -43,14 +46,30 @@
 class Image
 {
 public:
+
+    enum RawProcessingMode {HalfRaw, FullRaw, TinyPreview, SmallPreview, FullPreview};
+    enum CompositeMode{Lighten, LightenIntensity};
+
     Image();
+    Image(const std::string &file, RawProcessingMode raw_processing_mode=FullPreview);
+    Image(const void *buffer_ptr, const size_t buffer_size, RawProcessingMode raw_processing_mode=FullPreview);
+    Image(const Magick::Image &image);
+    Image(const Magick::Image *image);
+
     virtual ~Image();
 
-    void compose(const Image &with_image);
-    void compose(const Image *with_image);
+    void read(const std::string &file, RawProcessingMode raw_processing_mode=FullPreview);
+    void write(const std::string &new_file);
+
+    size_t to_buffer(void *write_to_ptr);
+
+    void composite(const Image &with_image, CompositeMode mode = LightenIntensity);
+    void composite(const Image *with_image, CompositeMode mode = LightenIntensity);
 
 private:
-    Magick::Image image;
+    void init();
+
+    Magick::Image *image;
     LibRaw *raw_processor;
 };
 
