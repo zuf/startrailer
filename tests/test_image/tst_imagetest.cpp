@@ -12,10 +12,13 @@ public:
 
 private Q_SLOTS:
     void testConstructors();
-    void BenchmarkJPEG();
-    void BenchmarkFullPreview();
-    void BenchmarkHalfRaw();
-    void BenchmarkFullRaw();
+    void testComposite();
+    void testToBuffer();
+
+    void benchmarkJPEG();
+    void benchmarkFullPreview();
+    void benchmarkHalfRaw();
+    void benchmarkFullRaw();
 };
 
 ImageTest::ImageTest()
@@ -47,7 +50,7 @@ void ImageTest::testConstructors()
     }
 }
 
-void ImageTest::BenchmarkJPEG()
+void ImageTest::benchmarkJPEG()
 {
     Image img;
     QBENCHMARK {
@@ -55,7 +58,7 @@ void ImageTest::BenchmarkJPEG()
     }
 }
 
-void ImageTest::BenchmarkFullPreview()
+void ImageTest::benchmarkFullPreview()
 {
     Image img;
 
@@ -64,7 +67,7 @@ void ImageTest::BenchmarkFullPreview()
     }
 }
 
-void ImageTest::BenchmarkHalfRaw()
+void ImageTest::benchmarkHalfRaw()
 {
     Image img;
 
@@ -73,13 +76,61 @@ void ImageTest::BenchmarkHalfRaw()
     }
 }
 
-void ImageTest::BenchmarkFullRaw()
+void ImageTest::benchmarkFullRaw()
 {
     Image img;
 
     QBENCHMARK {
         img.read("../../images/cr2/20130906_003859_IMG_8399.CR2", Image::FullRaw);
     }
+}
+
+void ImageTest::testComposite()
+{
+    const Image empty;
+    const Image img0("../../images/cr2/20130906_003859_IMG_8399.CR2");
+    Image img1("../../images/cr2/20130906_003859_IMG_8399.CR2");
+
+    QVERIFY2(img0!=empty, "Image should not eq to empty one");
+
+    QCOMPARE(img0, img0);
+    QVERIFY2(img0==img1, "Image should be eq when loaded frome one file");
+
+    Image img2("../../images/jpeg/20130906_015110_IMG_8470-preview3.jpg");
+
+    QVERIFY2(img0!=img2, "Image should not be eq when loaded frome different files");
+
+    img1.composite(img2);
+
+    QVERIFY2(img0!=img1, "Image should changed after compose");
+}
+
+void ImageTest::testToBuffer()
+{
+
+    Image empty;
+    Image img0("../../images/cr2/20130906_003859_IMG_8399.CR2");
+    Image img1("../../images/jpeg/20130906_015110_IMG_8470-preview3.jpg");
+
+    void *buf = new char[3*img0.width()*img0.height()];
+    size_t buf_length;
+    buf_length = img0.to_buffer(buf);
+
+    Magick::Image m(img0.width(), img0.height(), "RGB", Magick::CharPixel, buf);
+    Image from_m(m);
+
+    QCOMPARE(img0, from_m);
+
+    img0.to_buffer(buf);
+    // touch the image
+    ((char*)buf)[1]+=1;
+    ((char*)buf)[2]+=1;
+    ((char*)buf)[3]+=1;
+    Magick::Image m2(img0.width(), img0.height(), "RGB", Magick::CharPixel, buf);
+    Image from_m2(m2);
+
+    QVERIFY2(img0!=from_m2, "Image should be different");
+    delete[] buf;
 }
 
 QTEST_APPLESS_MAIN(ImageTest)

@@ -42,31 +42,70 @@
 ///  // Exporting
 ///  img1.write('image.bmp');
 ///  buffer_size = img2.to_buffer(buffer_ptr);
+///
 
 class Image
 {
 public:
-
     enum RawProcessingMode {HalfRaw, FullRaw, TinyPreview, SmallPreview, FullPreview};
-    enum CompositeMode{Lighten, LightenIntensity};
 
     Image();
     Image(const std::string &file, RawProcessingMode raw_processing_mode=FullPreview);
-    Image(const void *buffer_ptr, const size_t buffer_size, RawProcessingMode raw_processing_mode=FullPreview);
     Image(const Magick::Image &image);
-    Image(const Magick::Image *image);
 
     virtual ~Image();
 
     void read(const std::string &file, RawProcessingMode raw_processing_mode=FullPreview);
     void write(const std::string &new_file);
 
-    size_t to_buffer(void *write_to_ptr);
+    size_t to_buffer(void * &write_to_ptr);
 
-    void composite(const Image &with_image, CompositeMode mode = LightenIntensity);
-    void composite(const Image *with_image, CompositeMode mode = LightenIntensity);
+    void composite(const Image &with_image, Magick::CompositeOperator mode = Magick::LightenCompositeOp);
+    //void composite(const Image *with_image, Magick::CompositeOperator mode = Magick::LightenCompositeOp);
+
+
+    const int width() const {
+        return image->columns();
+    }
+
+    const int height() const {
+        return image->rows();
+    }
+
+    friend const bool operator==(const Image &left, const Image &right){
+        try {
+            //return false==(left.image->compare(*(right.image)));
+            left.image->compare(*(right.image));
+            return 0.0 == left.image->meanErrorPerPixel();
+        }
+        catch(Magick::ErrorImage){
+            return false;
+        }
+        catch(Magick::ErrorOption){
+            return false;
+        }
+    }
+
+    friend const bool operator!=(const Image &left, const Image &right){
+        try{
+            //return false!=(left.image->compare(*(right.image)));
+            left.image->compare(*(right.image));
+            return 0.0 != left.image->meanErrorPerPixel();
+        }
+        catch(Magick::ErrorImage){
+            return true;
+        }
+        catch(Magick::ErrorOption){
+            return true;
+        }
+    }
+
 
 private:
+    const Magick::Image *get_magick_image() const {
+        return image;
+    }
+
     void init();
 
     void read_with_image_magick(const std::string &file);
