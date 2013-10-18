@@ -8,28 +8,38 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = StarTrailer
+TARGET = startrailer
 TEMPLATE = app
 
+release: DESTDIR = build/release
+debug:   DESTDIR = build/debug
 
-SOURCES += main.cpp\
-        mainwindow.cpp \
-    startrailer.cpp \
-    compositetrailstask.cpp \
-    view.cpp \
-    playbackreader.cpp \
-    image.cpp \
-    quteimage.cpp
+OBJECTS_DIR = $$DESTDIR/obj
+MOC_DIR = $$DESTDIR/moc
+RCC_DIR = $$DESTDIR/qrc
+UI_DIR = $$DESTDIR/ui
 
-HEADERS  += mainwindow.h \
-    startrailer.h \
-    compositetrailstask.h \
-    view.h \
-    playbackreader.h \
-    image.h \
-    quteimage.h
 
-FORMS    += mainwindow.ui
+INCLUDEPATH += src
+
+SOURCES += src/main.cpp\
+        src/mainwindow.cpp \
+    src/startrailer.cpp \
+    src/compositetrailstask.cpp \
+    src/view.cpp \
+    src/playbackreader.cpp \
+    src/image.cpp \
+    src/quteimage.cpp
+
+HEADERS  += src/mainwindow.h \
+    src/startrailer.h \
+    src/compositetrailstask.h \
+    src/view.h \
+    src/playbackreader.h \
+    src/image.h \
+    src/quteimage.h
+
+FORMS    += ui/mainwindow.ui
 
 #LIBS += `Magick++-config --cppflags --cxxflags --ldflags --libs`
 CONFIG += link_pkgconfig

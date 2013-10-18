@@ -20,3 +20,5 @@ Makefile
 *-build-*
 
 *.autosave
+
+build

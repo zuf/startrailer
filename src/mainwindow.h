@@ -11,7 +11,7 @@
 #include <Magick++.h>
 #include <QProgressBar>
 #include <QActionGroup>
-#include <startrailer.h>
+#include "startrailer.h"
 #include <QMutex>
 
 namespace Ui {
