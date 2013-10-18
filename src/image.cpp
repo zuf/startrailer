@@ -1,4 +1,5 @@
 #include "image.h"
+#include <cassert>
 
 Image::Image()
 {
@@ -25,60 +26,43 @@ Image::~Image()
 
 void Image::read(const std::string &file, RawProcessingMode raw_processing_mode)
 {
+    assert(image != 0);
     if (raw_processor==0)
         raw_processor = new LibRaw();
 
+    assert(raw_processor != 0);
     if (LIBRAW_SUCCESS==raw_processor->open_file(file.c_str()))
     {
-        // STUB: Now only loads full sized previews from RAW
-        if (FullPreview!=raw_processing_mode)
+        switch(raw_processing_mode)
         {
-          throw std::runtime_error("Unsupported RawProcessingMode");
-        }
-
-        int result = raw_processor->unpack_thumb();
-
-        if (LIBRAW_SUCCESS!=result)
-        {
-            throw std::runtime_error(std::string("Can't unpack thumbnail for file ") + file  + ". Error: " + raw_processor->strerror(result));
-        }
-
-        switch(raw_processor->imgdata.thumbnail.tformat){
-        case LIBRAW_THUMBNAIL_JPEG:
-        {
-            // memory copied here
-            Magick::Blob blob(raw_processor->imgdata.thumbnail.thumb, raw_processor->imgdata.thumbnail.tlength);
-            image->read(blob);
-        }
+        case FullPreview:
+            read_preview_with_libraw(file);
             break;
-
-        case LIBRAW_THUMBNAIL_BITMAP:
-            // TODO: read this bitmaps (RGB-8 format)
-            throw std::runtime_error("Unsupported thumbnail format. Please add issue to my github. LibRaw reports: LIBRAW_THUMBNAIL_BITMAP");
+        case HalfRaw:
+            read_raw_with_libraw(file, true);
             break;
-
-        case LIBRAW_THUMBNAIL_LAYER:
-            throw std::runtime_error("Unsupported thumbnail format. LibRaw reports: LIBRAW_THUMBNAIL_LAYER");
+        case FullRaw:
+            read_raw_with_libraw(file);
             break;
-
-        case LIBRAW_THUMBNAIL_UNKNOWN:
-            throw std::runtime_error("Unsupported or unknown thumbnail format. LibRaw reports: LIBRAW_THUMBNAIL_UNKNOWN");
+        case TinyPreview:
+            throw std::runtime_error("Read RAW with mode TinyPreview not yet implemented");
             break;
-
+        case SmallPreview:
+            throw std::runtime_error("Read RAW with mode SmallPreview not yet implemented");
+            break;
         default:
-            throw std::runtime_error("Thumbnail error: Unholy error!"); // my favorite :)
+            throw std::runtime_error("Unknown raw_processing_mode");
         }
-
-        raw_processor->recycle();
     }
     else
     {
-        image->read(file);
+        read_with_image_magick(file);
     }
 }
 
 void Image::write(const std::string &new_file)
 {
+    assert(image != 0);
     image->write(new_file);
 }
 
@@ -86,5 +70,72 @@ void Image::init()
 {
     image=new Magick::Image();
     raw_processor=0;
+}
+
+void Image::read_with_image_magick(const std::string &file)
+{
+    assert(image != 0);
+    image->read(file);
+}
+
+void Image::read_preview_with_libraw(const std::string &file)
+{
+    assert(raw_processor != 0);
+
+    int result = raw_processor->unpack_thumb();
+
+    if (LIBRAW_SUCCESS!=result)
+    {
+        throw std::runtime_error(std::string("Can't unpack thumbnail for file ") + file  + ". Error: " + raw_processor->strerror(result));
+    }
+
+    switch(raw_processor->imgdata.thumbnail.tformat)
+    {
+    case LIBRAW_THUMBNAIL_JPEG:
+    {
+        // memory copied here
+        Magick::Blob blob(raw_processor->imgdata.thumbnail.thumb, raw_processor->imgdata.thumbnail.tlength);
+        image->read(blob);
+    }
+        break;
+
+    case LIBRAW_THUMBNAIL_BITMAP:
+    {
+        image->read( raw_processor->imgdata.thumbnail.twidth, raw_processor->imgdata.thumbnail.theight, "RGB", Magick::CharPixel, raw_processor->imgdata.thumbnail.thumb);
+    }
+        break;
+
+    case LIBRAW_THUMBNAIL_LAYER:
+        throw std::runtime_error("Unsupported thumbnail format. LibRaw reports: LIBRAW_THUMBNAIL_LAYER");
+        break;
+
+    case LIBRAW_THUMBNAIL_UNKNOWN:
+        throw std::runtime_error("Unsupported or unknown thumbnail format. LibRaw reports: LIBRAW_THUMBNAIL_UNKNOWN");
+        break;
+
+    default:
+        throw std::runtime_error("Thumbnail read error: Unholy error!"); // my favorite :)
+    }
+
+    raw_processor->recycle();
+}
+
+void Image::read_raw_with_libraw(const std::string &file, const bool half_size)
+{
+    assert(raw_processor != 0);
+
+    raw_processor->imgdata.params.half_size = half_size;
+
+    int result = raw_processor->unpack();
+    if (LIBRAW_SUCCESS!=result){
+        throw std::runtime_error(std::string("Can't unpack raw file ") + file  + ". Error: " + raw_processor->strerror(result));
+    }
+
+    result = raw_processor->dcraw_process();
+    if (LIBRAW_SUCCESS!=result){
+        throw std::runtime_error(std::string("Can't process raw file ") + file  + ". Error: " + raw_processor->strerror(result));
+    }
+
+    raw_processor->recycle();
 }
 

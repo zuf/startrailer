@@ -69,6 +69,10 @@ public:
 private:
     void init();
 
+    void read_with_image_magick(const std::string &file);
+    void read_preview_with_libraw(const std::string &file);
+    void read_raw_with_libraw(const std::string &file, const bool half_size=false);
+
     Magick::Image *image;
     LibRaw *raw_processor;
 };
