@@ -11,8 +11,9 @@
 #include <Magick++.h>
 #include <QProgressBar>
 #include <QActionGroup>
-#include "startrailer.h"
+//#include "startrailer.h"
 #include <QMutex>
+#include "image.h"
 
 namespace Ui {
 class MainWindow;
@@ -28,6 +29,7 @@ public:
 
 public slots:
     void handleFinished();
+    void redrawPreview();
 
 private slots:
     void on_filesList_doubleClicked(const QModelIndex &index);    
@@ -49,9 +51,7 @@ private slots:
 
     void on_actionClearSelection_triggered();
 
-    void announceProgress(int counter);
-
-    void receiveMagickImage(Magick::Image *image);
+    void announceProgress(int counter);    
 
     void composingFinished();
 
@@ -80,25 +80,27 @@ private slots:
 
     void on_actionSelectEach_100_triggered();
 
-    void on_actionAbout_Qt_triggered();
-
-    void on_actionPreviewEach_image_triggered();
-
-    void on_actionPreviewEach_5th_triggered();
-
-    void on_actionPreviewEach_10th_triggered();
-
-    void on_actionPreviewEach_25th_triggered();
-
-    void on_actionPreviewEach_50th_triggered();
-
-    void on_actionPreviewEach_100th_triggered();
+    void on_actionAbout_Qt_triggered();    
 
     void on_actionWithout_preview_triggered();
 
     void on_actionDifference_triggered();
 
-    void on_actionPlay_triggered();
+    void on_actionPlay_triggered();    
+
+    void on_actionPreviewEach_1s_triggered();
+
+    void on_actionPreviewEach_5s_triggered();
+
+    void on_actionPreviewEach_2s_triggered();
+
+    void on_actionPreviewEach_10s_triggered();
+
+    void on_actionPreviewEach_15s_triggered();
+
+    void on_actionPreviewEach_30s_triggered();
+
+    void on_actionPreviewEach_60s_triggered();
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -109,7 +111,7 @@ private:
 
     void selectEachNRow(int n);
 
-    void drawMagickImage(Magick::Image image);
+    void drawImage(Image &image);
 
     Ui::MainWindow *ui;
     QFileSystemModel *model;
@@ -118,14 +120,16 @@ private:
     QGraphicsPixmapItem* item;
 
     volatile bool stopped;
-    Magick::Image *preview_image;
+    //Magick::Image *preview_image;
+    Image *preview_image;
+    QMutex mutex_preview_image;
 
     QProgressBar *progress_bar;
 
-    StarTrailer st;
+//    StarTrailer st;
     Magick::CompositeOperator compose_op;
     int started_threads;
-    int preview_each_n_image;
+    int preview_each_n_ms;
     QActionGroup* preview_each_n_group;
 
     QVector<int> chunkSizes(const int size, const int chunkCount)

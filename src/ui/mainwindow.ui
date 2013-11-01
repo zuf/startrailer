@@ -93,12 +93,13 @@
       <string>Live preview while composite</string>
      </property>
      <addaction name="actionWithout_preview"/>
-     <addaction name="actionPreviewEach_image"/>
-     <addaction name="actionPreviewEach_5th"/>
-     <addaction name="actionPreviewEach_10th"/>
-     <addaction name="actionPreviewEach_25th"/>
-     <addaction name="actionPreviewEach_50th"/>
-     <addaction name="actionPreviewEach_100th"/>
+     <addaction name="actionPreviewEach_1s"/>
+     <addaction name="actionPreviewEach_2s"/>
+     <addaction name="actionPreviewEach_5s"/>
+     <addaction name="actionPreviewEach_10s"/>
+     <addaction name="actionPreviewEach_15s"/>
+     <addaction name="actionPreviewEach_30s"/>
+     <addaction name="actionPreviewEach_60s"/>
     </widget>
     <addaction name="actionAuto_trail_on_select"/>
     <addaction name="menuLive_preview_while_composite"/>
@@ -539,15 +540,15 @@
     <string>Each 100</string>
    </property>
   </action>
-  <action name="actionPreviewEach_image">
+  <action name="actionPreviewEach_1s">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Each image</string>
+    <string>Each 1 second</string>
    </property>
   </action>
-  <action name="actionPreviewEach_5th">
+  <action name="actionPreviewEach_2s">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -555,39 +556,39 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Each 5th</string>
+    <string>Each 2 seconds</string>
    </property>
   </action>
-  <action name="actionPreviewEach_10th">
+  <action name="actionPreviewEach_5s">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Each 10th</string>
+    <string>Each 5 seconds</string>
    </property>
   </action>
-  <action name="actionPreviewEach_25th">
+  <action name="actionPreviewEach_10s">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Each 25th</string>
+    <string>Each 10 seconds</string>
    </property>
   </action>
-  <action name="actionPreviewEach_50th">
+  <action name="actionPreviewEach_15s">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Each 50th</string>
+    <string>Each 15 seconds</string>
    </property>
   </action>
-  <action name="actionPreviewEach_100th">
+  <action name="actionPreviewEach_30s">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Each 100th</string>
+    <string>Each 30 seconds</string>
    </property>
   </action>
   <action name="actionAbout_Qt">
@@ -611,6 +612,14 @@
   <action name="actionPlay">
    <property name="text">
     <string>Play (time lapse)</string>
+   </property>
+  </action>
+  <action name="actionPreviewEach_60s">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Each 60 seconds</string>
    </property>
   </action>
  </widget>

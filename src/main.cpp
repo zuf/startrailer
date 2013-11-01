@@ -12,7 +12,9 @@ int main(int argc, char *argv[])
     w.show();
 
 
-    qRegisterMetaType<Magick::Image*>("Magick::Image*");
+    //qRegisterMetaType<Magick::Image*>("Magick::Image*");
+    //qRegisterMetaType<Magick::Image*>("Image*");
+
 
     return a.exec();
 }

@@ -52,6 +52,7 @@ public:
     Image();
     Image(const std::string &file, RawProcessingMode raw_processing_mode=FullPreview);
     Image(const Magick::Image &image);
+    Image(const Image &from_image);
 
     virtual ~Image();
 
@@ -100,11 +101,11 @@ public:
         }
     }
 
-
-private:
     const Magick::Image *get_magick_image() const {
         return image;
     }
+private:
+
 
     void init();
 

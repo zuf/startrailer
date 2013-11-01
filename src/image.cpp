@@ -1,9 +1,14 @@
 #include "image.h"
 #include <cassert>
 
-Image::Image()
-{
+Image::Image(){
     init();
+}
+
+Image::Image(const Image &from_image)
+{
+    image=new Magick::Image(*from_image.get_magick_image());
+    raw_processor = new LibRaw();
 }
 
 Image::Image(const std::string &file, Image::RawProcessingMode raw_processing_mode)
@@ -14,8 +19,8 @@ Image::Image(const std::string &file, Image::RawProcessingMode raw_processing_mo
 
 Image::Image(const Magick::Image &from_image)
 {
-    image = new Magick::Image(from_image);
-    raw_processor=0;
+    raw_processor = new LibRaw();
+    image = new Magick::Image(from_image);    
 }
 
 Image::~Image()
@@ -26,17 +31,14 @@ Image::~Image()
     }
     if (raw_processor)
     {
+        raw_processor->recycle();
         delete raw_processor;
     }
 }
 
 void Image::read(const std::string &file, RawProcessingMode raw_processing_mode)
-{
-    assert(image != 0);
-    if (raw_processor==0)
-        raw_processor = new LibRaw();
-
-    assert(raw_processor != 0);
+{    
+    assert(raw_processor != 0);    
     if (LIBRAW_SUCCESS==raw_processor->open_file(file.c_str()))
     {
         switch(raw_processing_mode)
@@ -65,11 +67,11 @@ void Image::read(const std::string &file, RawProcessingMode raw_processing_mode)
         read_with_image_magick(file);
     }
 
-    if (raw_processor)
-    {
-        delete raw_processor;
-        raw_processor=0;
-    }
+//    if (raw_processor)
+//    {
+//        delete raw_processor;
+//        raw_processor=0;
+//    }
 }
 
 void Image::write(const std::string &new_file)
@@ -80,20 +82,20 @@ void Image::write(const std::string &new_file)
 
 size_t Image::to_buffer(void * &write_to_ptr)
 {
-    const Magick::StorageType storage_type=Magick::CharPixel;
+    const Magick::StorageType storage_type=Magick::CharPixel;    
     image->write(0, 0, image->columns(), image->rows(), "RGB", storage_type, write_to_ptr);
     return 3*image->columns()*image->rows();
 }
 
 void Image::composite(const Image &with_image, Magick::CompositeOperator mode)
 {
-    image->composite(*with_image.get_magick_image(), 0, 0, mode);
+    image->composite(*(with_image.get_magick_image()), 0, 0, mode);
 }
 
 void Image::init()
 {
     image=new Magick::Image();
-    raw_processor=0;
+    raw_processor = new LibRaw();
 }
 
 void Image::read_with_image_magick(const std::string &file)

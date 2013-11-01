@@ -6,7 +6,7 @@
 #include <QMimeDatabase>
 #include <QMimeType>
 #include <QElapsedTimer>
-#include "startrailer.h"
+//#include "startrailer.h"
 #include <QMessageBox>
 #include <QListIterator>
 #include <QtConcurrent/QtConcurrent>
@@ -22,7 +22,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {    
-    preview_image=0;
+    preview_image = new Image();
+    Q_ASSERT(preview_image);
     compose_op = MagickCore::LightenIntensityCompositeOp;
 
     ui->setupUi(this);
@@ -42,12 +43,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     model->setRootPath(start_path);
     qDebug() << "QDir::currentPath(): " << start_path;
-    //model->setFilter( QDir::AllDirs | QDir::NoDotAndDotDot );   
+    //model->setFilter( QDir::AllDirs | QDir::NoDotAndDotDot );
 
 
     ui->filesList->setModel(model);
     //ui->filesList->setSortingEnabled(true);
-    ui->filesList->setRootIndex(model->index(start_path));    
+    ui->filesList->setRootIndex(model->index(start_path));
     model->sort(0);
 
     item = new QGraphicsPixmapItem();
@@ -73,15 +74,18 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->statusBar->addPermanentWidget(progress_bar);
     started_threads=0;
 
-    preview_each_n_image=1;
+    //preview_each_n_ms=50;
+    //on_actionPreviewEach_5th_triggered();
+    ui->actionPreviewEach_2s->trigger();
 
     preview_each_n_group = new QActionGroup( this );
-    ui->actionPreviewEach_image->setActionGroup(preview_each_n_group);
-    ui->actionPreviewEach_5th->setActionGroup(preview_each_n_group);
-    ui->actionPreviewEach_10th->setActionGroup(preview_each_n_group);
-    ui->actionPreviewEach_25th->setActionGroup(preview_each_n_group);
-    ui->actionPreviewEach_50th->setActionGroup(preview_each_n_group);
-    ui->actionPreviewEach_100th->setActionGroup(preview_each_n_group);
+    ui->actionPreviewEach_1s->setActionGroup(preview_each_n_group);
+    ui->actionPreviewEach_2s->setActionGroup(preview_each_n_group);
+    ui->actionPreviewEach_5s->setActionGroup(preview_each_n_group);
+    ui->actionPreviewEach_10s->setActionGroup(preview_each_n_group);
+    ui->actionPreviewEach_15s->setActionGroup(preview_each_n_group);
+    ui->actionPreviewEach_30s->setActionGroup(preview_each_n_group);
+    ui->actionPreviewEach_60s->setActionGroup(preview_each_n_group);
     ui->actionWithout_preview->setActionGroup(preview_each_n_group);
 }
 
@@ -107,6 +111,16 @@ void MainWindow::handleFinished()
 
 
         //drawMagickImage(out);
+    }
+}
+
+void MainWindow::redrawPreview()
+{
+    qDebug() << "Redraw at progress: " << progress_bar->value() << " / " << progress_bar->maximum();
+    if (mutex_preview_image.tryLock())
+    {
+        drawImage(*preview_image);
+        mutex_preview_image.unlock();
     }
 }
 
@@ -151,12 +165,12 @@ void MainWindow::on_actionComposite_triggered()
 
 void MainWindow::on_filesList_clicked(const QModelIndex &index)
 {
-//    QString path = model->filePath(index);
-//    //        qDebug() << path;
+    //    QString path = model->filePath(index);
+    //    //        qDebug() << path;
 
-//    QMimeDatabase mimeDatabase;
-//    QMimeType mimeType;
-//    mimeType = mimeDatabase.mimeTypeForFile(path);
+    //    QMimeDatabase mimeDatabase;
+    //    QMimeType mimeType;
+    //    mimeType = mimeDatabase.mimeTypeForFile(path);
     //        qDebug() << mimeType.name();
     //        qDebug() << "Valid: " << mimeType.isValid();
 
@@ -180,13 +194,8 @@ void MainWindow::compositeSelected()
     QThreadPool::globalInstance()->waitForDone();
     qDebug() << "Start composing...";
 
-    QElapsedTimer timer;
-    timer.start();
-
-    //    StarTrailer st;
-    //    const QByteArray *image_bytes = st.q_compose(model->filePath(list[0]).toStdString(), model->filePath(list[1]).toStdString());
-
-    //const QByteArray *image_bytes = st.q_compose_model_list(model, ui->filesList->selectionModel()->selectedIndexes());
+    //    QElapsedTimer timer;
+    //    timer.start();
 
     QStringList files;
     QModelIndexList selected_rows = ui->filesList->selectionModel()->selectedRows(0);
@@ -202,35 +211,47 @@ void MainWindow::compositeSelected()
 
         files.sort();
 
-        //qDebug() << "Files: " << files;
-        qDebug() << "files.count(): " << files.count();
+        //        qDebug() << "files.count(): " << files.count();
 
         QVector<int> sizes = chunkSizes(files.count(), QThread::idealThreadCount());
 
-        qDebug() << "schunk sizes: " << sizes;
+        //        qDebug() << "schunk sizes: " << sizes;
 
         progress_bar->setMaximum(files.size() + sizes.size() - sizes.count(0));
         progress_bar->setValue(0);
         progress_bar->show();
         int offset=0;
         //preview_image.read(files[0].toStdString());
-        if (preview_image)
-        {
-            delete preview_image;
-            preview_image=0;
-        }
-        preview_image = st.read_image(files[0].toStdString());
+        //        preview_image = st.read_image(files[0].toStdString());
+        Q_ASSERT(preview_image!=0);
+        preview_image->read(files[0].toStdString());
 
-        qDebug() << "Files list made from selection and first image prepared in " << timer.elapsed() << "milliseconds";
+        //        qDebug() << "Files list made from selection and first image prepared in " << timer.elapsed() << "milliseconds";
 
         QThreadPool::globalInstance()->waitForDone();
 
         started_threads=0;
+
+        int tasks_count=0;
+        for (int n=0; n<sizes.size(); n++)
+        {
+            if (sizes[n]>0)
+                ++tasks_count;
+        }
+
         for (int n=0; n<sizes.size(); n++)
         {
             if (sizes[n]>0)
             {
-                CompositeTrailsTask *task = new CompositeTrailsTask(this, &stopped, files.mid(offset, sizes[n]), preview_each_n_image, compose_op);
+                CompositeTrailsTask *task = new CompositeTrailsTask(this,
+                                                                    &stopped,
+                                                                    files.mid(offset, sizes[n]),
+                                                                    preview_each_n_ms,
+                                                                    n,
+                                                                    tasks_count,
+                                                                    &mutex_preview_image,
+                                                                    preview_image,
+                                                                    compose_op);
                 QThreadPool::globalInstance()->start(task);
                 ++started_threads;
                 offset += sizes[n];
@@ -242,7 +263,7 @@ void MainWindow::compositeSelected()
         //QMessageBox::information(this, tr("No files selected"), tr("Please select files to composite."));
         ui->statusBar->showMessage(tr("Please select files to composite."), 3000);
     }
-    qDebug() << "---------------------------\n";
+    qDebug() << "MainWindow::compositeSelected() ---------------------------\n";
     mutex.unlock();
 }
 
@@ -275,16 +296,45 @@ void MainWindow::selectionChanged(const QItemSelection &selected, const QItemSel
     timer->start(20);
 }
 
-void MainWindow::drawMagickImage(Magick::Image image)
-{    
-    const QByteArray *image_bytes = st.image_to_qbyte_array(image);
+void MainWindow::drawImage(Image &image)
+{
+    //    Q_ASSERT(image.width()>0);
+    //    Q_ASSERT(image.height()>0);
+
+    //    size_t image_length = image.width()*image.height()*3;
+
+    //    uchar* data __attribute__((align(64))) = new uchar[image_length];
+    //    void* vd=data;
+
+    //    size_t copied_bytes = image.to_buffer(vd);
+    //    Q_ASSERT(copied_bytes==image_length);
+    //    Q_ASSERT(copied_bytes>0);
+
+    //    QImage *qimg = new QImage(data, image.width(), image.height(), QImage::Format_RGB888);
+    //    Q_ASSERT(qimg->byteCount()>0);
+
+    //    QPixmap qpm;
+    //    Q_ASSERT(qpm.isNull()==true);
+
+    //    bool res = qpm.convertFromImage(*qimg);
+    //    Q_ASSERT(res);
+
+    //    delete qimg;
+    //    delete[] data;
+
+    //    Q_ASSERT(qpm.isNull()==false);
+
+    Magick::Image img(*image.get_magick_image());
+
+    Magick::Blob blob;
+    img.magick("BMP");
+    img.write( &blob );
     QPixmap qpm;
-    qpm.loadFromData(*image_bytes);    
-    delete image_bytes;
+    qpm.loadFromData((uchar*)blob.data(), blob.length());
+
     item->setPixmap(qpm);
     ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
 }
-
 
 void MainWindow::on_actionUpdateFileList_triggered()
 {
@@ -302,20 +352,6 @@ void MainWindow::announceProgress(int counter)
     progress_bar->setValue( progress_bar->value() + 1 );
 }
 
-void MainWindow::receiveMagickImage(Magick::Image *image)
-{
-    static QMutex mutex;
-    //mutex.lock();
-    //qDebug() << "receiveMagickImage()";
-    //    StarTrailer st;
-
-    st.compose_first_with_second(preview_image, image, compose_op);
-    drawMagickImage(*preview_image);
-    delete image;
-    ui->action_Save_as->setEnabled(true);
-    //mutex.unlock();
-}
-
 void MainWindow::composingFinished()
 {
     //qDebug() << "QThreadPool::globalInstance()->activeThreadCount(): " << QThreadPool::globalInstance()->activeThreadCount();
@@ -326,6 +362,7 @@ void MainWindow::composingFinished()
         progress_bar->hide();
         progress_bar->setValue(0);
     }
+    redrawPreview();
 }
 
 
@@ -340,6 +377,9 @@ void MainWindow::on_action_Save_as_triggered()
 
 void MainWindow::on_actionE_xit_triggered()
 {
+    stopped = true;
+    QThreadPool::globalInstance()->waitForDone();
+
     QApplication::quit();
 }
 
@@ -364,8 +404,10 @@ void MainWindow::slot_compositeSelected()
         QModelIndex index = ui->filesList->selectionModel()->selectedIndexes().first();
         if (!model->isDir(index))
         {
-            preview_image = st.read_image(model->filePath(index).toStdString());
-            drawMagickImage(*preview_image);
+            //            preview_image = st.read_image(model->filePath(index).toStdString());
+            Q_ASSERT(preview_image);
+            preview_image->read(model->filePath(index).toStdString());
+            drawImage(*preview_image);
         }
     }
     else
@@ -377,14 +419,9 @@ void MainWindow::slot_compositeSelected()
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
-{
-    //    if (maybeSave()) {
-    //        writeSettings();
-    //        event->accept();
-    //    } else {
-    //        event->ignore();
-    //    }
+{    
     stopped = true;
+    QThreadPool::globalInstance()->waitForDone();
 }
 
 void MainWindow::on_actionClear_2_triggered()
@@ -435,48 +472,6 @@ void MainWindow::on_actionAbout_Qt_triggered()
     QMessageBox::aboutQt(this);
 }
 
-void MainWindow::on_actionPreviewEach_image_triggered()
-{
-    preview_each_n_image = 1;
-}
-
-void MainWindow::on_actionPreviewEach_5th_triggered()
-{
-    preview_each_n_image = 5;
-}
-
-void MainWindow::on_actionPreviewEach_10th_triggered()
-{
-    preview_each_n_image = 10;
-}
-
-void MainWindow::on_actionPreviewEach_25th_triggered()
-{
-    preview_each_n_image = 25;
-}
-
-void MainWindow::on_actionPreviewEach_50th_triggered()
-{
-    preview_each_n_image = 50;
-}
-
-void MainWindow::on_actionPreviewEach_100th_triggered()
-{
-    preview_each_n_image = 100;
-}
-
-void MainWindow::on_actionWithout_preview_triggered()
-{
-    preview_each_n_image = 0;
-}
-
-void MainWindow::on_actionDifference_triggered()
-{
-    compose_op = Magick::DifferenceCompositeOp;
-}
-
-
-
 void MainWindow::on_actionPlay_triggered()
 {
     stopped = true;
@@ -504,12 +499,8 @@ void MainWindow::on_actionPlay_triggered()
 
 
         int offset=0;
-        if (preview_image)
-        {
-            delete preview_image;
-            preview_image=0;
-        }
-        preview_image = st.read_image(files[0].toStdString());
+        Q_ASSERT(preview_image);
+        preview_image->read(files[0].toStdString());
 
         QThreadPool::globalInstance()->waitForDone();
 
@@ -517,9 +508,10 @@ void MainWindow::on_actionPlay_triggered()
         for (int n=0; n<sizes.size(); n++)
         {
             if (sizes[n]>0)
-            {
-                //PlaybackReader *task = new PlaybackReader(&images_bytes_queue, &images_bytes_queue_mutex, files);
-                PlaybackReader *task = new PlaybackReader(&images_bytes_queue, &images_bytes_queue_mutex, files.mid(offset, sizes[n]));
+            {                
+                PlaybackReader *task = new PlaybackReader(&images_bytes_queue,
+                                                          &images_bytes_queue_mutex,
+                                                          files.mid(offset, sizes[n]));
 
                 QThreadPool::globalInstance()->start(task);
                 ++started_threads;
@@ -552,4 +544,49 @@ void MainWindow::on_actionPlay_triggered()
     {
         ui->statusBar->showMessage(tr("Please select files to play."), 3000);
     }
+}
+
+void MainWindow::on_actionWithout_preview_triggered()
+{
+    preview_each_n_ms = 0;
+}
+
+void MainWindow::on_actionPreviewEach_1s_triggered()
+{
+    preview_each_n_ms = 1000;
+}
+
+void MainWindow::on_actionPreviewEach_2s_triggered()
+{
+    preview_each_n_ms = 2000;
+}
+
+void MainWindow::on_actionPreviewEach_5s_triggered()
+{
+    preview_each_n_ms = 5000;
+}
+
+void MainWindow::on_actionPreviewEach_10s_triggered()
+{
+    preview_each_n_ms = 10000;
+}
+
+void MainWindow::on_actionPreviewEach_15s_triggered()
+{
+    preview_each_n_ms = 15000;
+}
+
+void MainWindow::on_actionPreviewEach_30s_triggered()
+{
+    preview_each_n_ms = 30000;
+}
+
+void MainWindow::on_actionPreviewEach_60s_triggered()
+{
+    preview_each_n_ms = 60000;
+}
+
+void MainWindow::on_actionDifference_triggered()
+{
+    compose_op = Magick::DifferenceCompositeOp;
 }
