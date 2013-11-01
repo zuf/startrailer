@@ -15,6 +15,8 @@
 #include <QMutex>
 #include "image.h"
 
+#include <QElapsedTimer>
+
 namespace Ui {
 class MainWindow;
 }
@@ -28,7 +30,7 @@ public:
     ~MainWindow();
 
 public slots:
-    void handleFinished();
+    //void handleFinished();
     void redrawPreview();
 
 private slots:
@@ -131,6 +133,8 @@ private:
     int started_threads;
     int preview_each_n_ms;
     QActionGroup* preview_each_n_group;
+
+    QElapsedTimer benchmark_timer;
 
     QVector<int> chunkSizes(const int size, const int chunkCount)
     {

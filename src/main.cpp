@@ -11,10 +11,5 @@ int main(int argc, char *argv[])
     MainWindow w;
     w.show();
 
-
-    //qRegisterMetaType<Magick::Image*>("Magick::Image*");
-    //qRegisterMetaType<Magick::Image*>("Image*");
-
-
     return a.exec();
 }

@@ -28,8 +28,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
-    //    ui->progressBar->hide();
-
     model = new QFileSystemModel;
 
     QString start_path = QDir::currentPath();
@@ -42,12 +40,8 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     model->setRootPath(start_path);
-    qDebug() << "QDir::currentPath(): " << start_path;
-    //model->setFilter( QDir::AllDirs | QDir::NoDotAndDotDot );
-
 
     ui->filesList->setModel(model);
-    //ui->filesList->setSortingEnabled(true);
     ui->filesList->setRootIndex(model->index(start_path));
     model->sort(0);
 
@@ -60,7 +54,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->graphicsView->setBackgroundBrush(QBrush(QColor(32,32,32), Qt::SolidPattern));
     ui->graphicsView->setResizeAnchor(QGraphicsView::AnchorViewCenter);
-    //scene->addItem(item);
     ui->graphicsView->setScene(scene);
     item->setTransformationMode(Qt::SmoothTransformation);
 
@@ -74,8 +67,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->statusBar->addPermanentWidget(progress_bar);
     started_threads=0;
 
-    //preview_each_n_ms=50;
-    //on_actionPreviewEach_5th_triggered();
     ui->actionPreviewEach_2s->trigger();
 
     preview_each_n_group = new QActionGroup( this );
@@ -93,30 +84,27 @@ MainWindow::~MainWindow()
 {       
     delete progress_bar;
     delete scene;
-    //delete item;
     delete ui;
     delete model;
     delete preview_each_n_group;
 }
 
-void MainWindow::handleFinished()
-{
-    static int finished_runners = 0;
-    ++finished_runners;
-    qDebug() << "handleFinished(): " << finished_runners;
+//void MainWindow::handleFinished()
+//{
+//    static int finished_runners = 0;
+//    ++finished_runners;
+//    qDebug() << "handleFinished(): " << finished_runners;
 
-    if (finished_runners >= QThread::idealThreadCount())
-    {
-        finished_runners=0;
-
-
-        //drawMagickImage(out);
-    }
-}
+//    if (finished_runners >= QThread::idealThreadCount())
+//    {
+//        finished_runners=0;
+//    }
+//    redrawPreview();
+//}
 
 void MainWindow::redrawPreview()
 {
-    qDebug() << "Redraw at progress: " << progress_bar->value() << " / " << progress_bar->maximum();
+    //qDebug() << "Redraw at progress: " << progress_bar->value() << " / " << progress_bar->maximum();
     if (mutex_preview_image.tryLock())
     {
         drawImage(*preview_image);
@@ -192,10 +180,9 @@ void MainWindow::compositeSelected()
     mutex.lock();
     stopped = true;
     QThreadPool::globalInstance()->waitForDone();
-    qDebug() << "Start composing...";
 
-    //    QElapsedTimer timer;
-    //    timer.start();
+    benchmark_timer.start();
+    qDebug() << "Start composing...";
 
     QStringList files;
     QModelIndexList selected_rows = ui->filesList->selectionModel()->selectedRows(0);
@@ -260,7 +247,6 @@ void MainWindow::compositeSelected()
     }
     else
     {
-        //QMessageBox::information(this, tr("No files selected"), tr("Please select files to composite."));
         ui->statusBar->showMessage(tr("Please select files to composite."), 3000);
     }
     qDebug() << "MainWindow::compositeSelected() ---------------------------\n";
@@ -298,40 +284,44 @@ void MainWindow::selectionChanged(const QItemSelection &selected, const QItemSel
 
 void MainWindow::drawImage(Image &image)
 {
-    //    Q_ASSERT(image.width()>0);
-    //    Q_ASSERT(image.height()>0);
+    QPixmap qpm;
 
-    //    size_t image_length = image.width()*image.height()*3;
+    Q_ASSERT(image.width()>0);
+    Q_ASSERT(image.height()>0);
 
-    //    uchar* data __attribute__((align(64))) = new uchar[image_length];
-    //    void* vd=data;
+#define CONVER_IMAGE_WITH_RGB888
+#ifdef CONVER_IMAGE_WITH_RGB888
 
-    //    size_t copied_bytes = image.to_buffer(vd);
-    //    Q_ASSERT(copied_bytes==image_length);
-    //    Q_ASSERT(copied_bytes>0);
+    size_t image_length = image.width()*image.height()*3;
 
-    //    QImage *qimg = new QImage(data, image.width(), image.height(), QImage::Format_RGB888);
-    //    Q_ASSERT(qimg->byteCount()>0);
+    uchar* data __attribute__((align(64))) = new uchar[image_length];
+    void* vd=data;
 
-    //    QPixmap qpm;
-    //    Q_ASSERT(qpm.isNull()==true);
+    size_t copied_bytes = image.to_buffer(vd);
+    Q_ASSERT(copied_bytes==image_length);
+    Q_ASSERT(copied_bytes>0);
 
-    //    bool res = qpm.convertFromImage(*qimg);
-    //    Q_ASSERT(res);
+    QImage *qimg = new QImage(data, image.width(), image.height(), QImage::Format_RGB888);
+    Q_ASSERT(qimg->byteCount()>0);
 
-    //    delete qimg;
-    //    delete[] data;
 
-    //    Q_ASSERT(qpm.isNull()==false);
+    Q_ASSERT(qpm.isNull()==true);
 
+    bool res = qpm.convertFromImage(*qimg);
+    Q_ASSERT(res);
+
+    delete qimg;
+    delete[] data;
+
+    Q_ASSERT(qpm.isNull()==false);
+#else
     Magick::Image img(*image.get_magick_image());
 
     Magick::Blob blob;
     img.magick("BMP");
     img.write( &blob );
-    QPixmap qpm;
     qpm.loadFromData((uchar*)blob.data(), blob.length());
-
+#endif
     item->setPixmap(qpm);
     ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
 }
@@ -361,8 +351,9 @@ void MainWindow::composingFinished()
     {
         progress_bar->hide();
         progress_bar->setValue(0);
+        redrawPreview();
+        qDebug() << "benchmark_timer.elapsed(): " << benchmark_timer.elapsed();
     }
-    redrawPreview();
 }
 
 
@@ -508,7 +499,7 @@ void MainWindow::on_actionPlay_triggered()
         for (int n=0; n<sizes.size(); n++)
         {
             if (sizes[n]>0)
-            {                
+            {
                 PlaybackReader *task = new PlaybackReader(&images_bytes_queue,
                                                           &images_bytes_queue_mutex,
                                                           files.mid(offset, sizes[n]));
