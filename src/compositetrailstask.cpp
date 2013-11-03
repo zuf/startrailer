@@ -1,10 +1,6 @@
 #include "compositetrailstask.h"
-#include "startrailer.h"
 
 #include <QDebug>
-#include <QMimeData>
-#include <QMimeDatabase>
-#include <QMimeType>
 #include <QElapsedTimer>
 
 #include "libraw/libraw.h"

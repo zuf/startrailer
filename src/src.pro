@@ -17,7 +17,6 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    startrailer.cpp \
     compositetrailstask.cpp \
     view.cpp \
     playbackreader.cpp \
@@ -25,7 +24,6 @@ SOURCES += main.cpp\
     quteimage.cpp
 
 HEADERS  += mainwindow.h \
-    startrailer.h \
     compositetrailstask.h \
     view.h \
     playbackreader.h \

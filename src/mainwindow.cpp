@@ -2,9 +2,6 @@
 #include "ui_mainwindow.h"
 #include <QDebug>
 #include <QModelIndexList>
-#include <QMimeData>
-#include <QMimeDatabase>
-#include <QMimeType>
 #include <QElapsedTimer>
 #include <QMessageBox>
 #include <QListIterator>
@@ -130,18 +127,6 @@ void MainWindow::on_filesList_doubleClicked(const QModelIndex &index)
         model->setRootPath(model->filePath(index));
         model->sort(0);
     }
-    else
-    {
-        QMimeDatabase mimeDatabase;
-        QMimeType mimeType;
-        mimeType = mimeDatabase.mimeTypeForFile(path);
-
-        //        QImage image(path);
-        //        item->setPixmap(QPixmap::fromImage(image));
-        //        item->setTransformationMode(Qt::SmoothTransformation);
-        //        ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
-    }
-
 }
 
 
@@ -161,24 +146,6 @@ void MainWindow::on_actionComposite_triggered()
 
 void MainWindow::on_filesList_clicked(const QModelIndex &index)
 {
-    //    QString path = model->filePath(index);
-    //    //        qDebug() << path;
-
-    //    QMimeDatabase mimeDatabase;
-    //    QMimeType mimeType;
-    //    mimeType = mimeDatabase.mimeTypeForFile(path);
-    //        qDebug() << mimeType.name();
-    //        qDebug() << "Valid: " << mimeType.isValid();
-
-    //    QImage image(path);
-    //    if (item)
-    //        delete item;
-    //    item = new QGraphicsPixmapItem(QPixmap::fromImage(image));
-    //    scene->addItem(item);
-    //    ui->graphicsView->setScene(scene);
-    //    item->setTransformationMode(Qt::SmoothTransformation);
-    //    ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
-
 
 }
 
