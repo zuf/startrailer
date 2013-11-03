@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {    
-    preview_image = new StarTrailer::Image();
+    preview_image = new QuteImage();
     Q_ASSERT(preview_image);
     compose_op = MagickCore::LightenIntensityCompositeOp;
 

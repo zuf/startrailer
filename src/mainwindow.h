@@ -13,7 +13,7 @@
 #include <QActionGroup>
 #include <QMutex>
 #include "image.h"
-
+#include "quteimage.h"
 #include <QElapsedTimer>
 
 namespace Ui {
@@ -122,7 +122,7 @@ private:
 
     volatile bool stopped;
     //Magick::Image *preview_image;
-    StarTrailer::Image *preview_image;
+    QuteImage *preview_image;
     QMutex mutex_preview_image;
 
     QProgressBar *progress_bar;
