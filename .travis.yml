@@ -1,0 +1,11 @@
+language: cpp
+compiler:
+  - gcc
+  - clang
+branches:
+  only:
+    - master
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install qt-sdk libraw-dev imagemagick libmagick++-dev
+script: qmake && make && cd ./tests/build/debug/ && ./tst_imagetest
