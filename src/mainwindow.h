@@ -31,7 +31,7 @@ public:
 
 public slots:
     //void handleFinished();
-    void redrawPreview();
+    void redrawPreview(bool force=false);
 
 private slots:
     void on_filesList_doubleClicked(const QModelIndex &index);    

@@ -102,13 +102,22 @@ MainWindow::~MainWindow()
 //    redrawPreview();
 //}
 
-void MainWindow::redrawPreview()
+void MainWindow::redrawPreview(bool force)
 {
     //qDebug() << "Redraw at progress: " << progress_bar->value() << " / " << progress_bar->maximum();
-    if (mutex_preview_image.tryLock())
+    if (force)
     {
+        mutex_preview_image.lock();
         drawImage(*preview_image);
         mutex_preview_image.unlock();
+    }
+    else
+    {
+        if (mutex_preview_image.tryLock())
+        {
+            drawImage(*preview_image);
+            mutex_preview_image.unlock();
+        }
     }
 }
 
@@ -351,7 +360,7 @@ void MainWindow::composingFinished()
     {
         progress_bar->hide();
         progress_bar->setValue(0);
-        redrawPreview();
+        redrawPreview(true);
         qDebug() << "benchmark_timer.elapsed(): " << benchmark_timer.elapsed();
     }
 }
