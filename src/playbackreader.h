@@ -6,7 +6,7 @@
 #include <QMutex>
 #include <Magick++.h>
 #include <QStringList>
-#include "startrailer.h"
+//#include "startrailer.h"
 
 class PlaybackReader : public QRunnable
 {
@@ -16,7 +16,7 @@ public:
         mutex(the_mutex),
         files(the_files)
     {
-        st = new StarTrailer();
+        //st = new StarTrailer();
     }
 
     virtual ~PlaybackReader();
@@ -27,7 +27,7 @@ private:
     QMutex *mutex;
     QQueue<const QByteArray *> *queue;
     const QStringList files;
-    StarTrailer *st;
+    //StarTrailer *st;
 };
 
 #endif // PLAYBACKREADER_H

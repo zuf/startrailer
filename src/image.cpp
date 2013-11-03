@@ -1,6 +1,9 @@
 #include "image.h"
 #include <cassert>
 
+namespace StarTrailer
+{
+
 Image::Image(){
     init();
 }
@@ -101,7 +104,18 @@ void Image::init()
 void Image::read_with_image_magick(const std::string &file)
 {
     assert(image != 0);
-    image->read(file);
+    try
+    {
+        image->read(file);
+    }
+    catch(Magick::Error &error)
+    {
+       throw std::runtime_error(std::string("Can't open file: ") + file + std::string("ImageMagick reports: ") + error.what());
+    }
+    catch( std::exception &error )
+    {
+       throw std::runtime_error(std::string("Can't open file: ") + file + std::string("Exception: ") + error.what());
+    }
 }
 
 void Image::read_preview_with_libraw(const std::string &file)
@@ -163,5 +177,7 @@ void Image::read_raw_with_libraw(const std::string &file, const bool half_size)
     }
 
     raw_processor->recycle();
+}
+
 }
 

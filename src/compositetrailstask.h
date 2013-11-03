@@ -17,7 +17,7 @@ public:
                                  const int task_index,
                                  const int tasks_count,
                                  QMutex *mutex,
-                                 Image *preview,
+                                 StarTrailer::Image *preview,
                                  const Magick::CompositeOperator compose_op=Magick::LightenCompositeOp)
 
         : m_receiver(receiver),
@@ -32,10 +32,10 @@ public:
     {
         //m_out_image(new Magick::Image(files.first().toStdString()))
         *m_stopped=false;
-        m_out_image = new Image();
+        m_out_image = new StarTrailer::Image();
     }
 
-    Image const *getImage()const{ return m_out_image;}
+    StarTrailer::Image const *getImage()const{ return m_out_image;}
 
     virtual ~CompositeTrailsTask();
 
@@ -46,9 +46,9 @@ private:
     QObject *m_receiver;
     volatile bool *m_stopped;
     const QStringList m_sourceFiles;
-    Image * m_out_image;
+    StarTrailer::Image * m_out_image;
     QMutex *m_mutex;
-    Image * m_preview_image;
+    StarTrailer::Image * m_preview_image;
     const Magick::CompositeOperator m_compose_op;
     const int m_task_index;
     const int m_tasks_count;

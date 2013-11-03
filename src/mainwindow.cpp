@@ -6,7 +6,6 @@
 #include <QMimeDatabase>
 #include <QMimeType>
 #include <QElapsedTimer>
-//#include "startrailer.h"
 #include <QMessageBox>
 #include <QListIterator>
 #include <QtConcurrent/QtConcurrent>
@@ -22,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {    
-    preview_image = new Image();
+    preview_image = new StarTrailer::Image();
     Q_ASSERT(preview_image);
     compose_op = MagickCore::LightenIntensityCompositeOp;
 
@@ -291,7 +290,7 @@ void MainWindow::selectionChanged(const QItemSelection &selected, const QItemSel
     timer->start(20);
 }
 
-void MainWindow::drawImage(Image &image)
+void MainWindow::drawImage(StarTrailer::Image &image)
 {
     QPixmap qpm;
 

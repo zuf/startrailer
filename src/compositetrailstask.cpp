@@ -23,7 +23,7 @@ void CompositeTrailsTask::run()
         return;
 
     m_out_image->read(m_sourceFiles.first().toStdString());
-    Image image;
+    StarTrailer::Image image;
 
     if (*m_stopped)
         return;

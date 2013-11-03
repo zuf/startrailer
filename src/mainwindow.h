@@ -11,7 +11,6 @@
 #include <Magick++.h>
 #include <QProgressBar>
 #include <QActionGroup>
-//#include "startrailer.h"
 #include <QMutex>
 #include "image.h"
 
@@ -113,7 +112,7 @@ private:
 
     void selectEachNRow(int n);
 
-    void drawImage(Image &image);
+    void drawImage(StarTrailer::Image &image);
 
     Ui::MainWindow *ui;
     QFileSystemModel *model;
@@ -123,7 +122,7 @@ private:
 
     volatile bool stopped;
     //Magick::Image *preview_image;
-    Image *preview_image;
+    StarTrailer::Image *preview_image;
     QMutex mutex_preview_image;
 
     QProgressBar *progress_bar;

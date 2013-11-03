@@ -44,6 +44,15 @@
 ///  buffer_size = img2.to_buffer(buffer_ptr);
 ///
 
+namespace StarTrailer {
+
+class ReadError : public std::runtime_error
+{
+public:
+    explicit ReadError ( const std::string& what_ );
+    ~ReadError() throw ();
+};
+
 class Image
 {
 public:
@@ -117,4 +126,5 @@ private:
     LibRaw *raw_processor;
 };
 
+}
 #endif // IMAGE_H

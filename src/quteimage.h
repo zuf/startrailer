@@ -8,7 +8,7 @@
 ///
 ///
 
-class QuteImage : public Image
+class QuteImage : public StarTrailer::Image
 {
 public:
     QuteImage();
