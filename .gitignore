@@ -22,3 +22,7 @@ Makefile
 *.autosave
 
 build
+
+testresults.out
+*/testresults.out
+**/testresults.out
