@@ -13,12 +13,7 @@ public:
 private Q_SLOTS:
     void testConstructors();
     void testComposite();
-    void testToBuffer();
-
-    void benchmarkJPEG();
-    void benchmarkFullPreview();
-    void benchmarkHalfRaw();
-    void benchmarkFullRaw();
+    void testToBuffer();    
 };
 
 ImageTest::ImageTest()
@@ -50,40 +45,6 @@ void ImageTest::testConstructors()
     }
 }
 
-void ImageTest::benchmarkJPEG()
-{
-    StarTrailer::Image img;
-    QBENCHMARK {
-        img.read("../../images/jpeg/20130906_015110_IMG_8470-preview3.jpg");
-    }
-}
-
-void ImageTest::benchmarkFullPreview()
-{
-    StarTrailer::Image img;
-
-    QBENCHMARK {
-        img.read("../../images/cr2/20130906_003859_IMG_8399.CR2", StarTrailer::Image::FullPreview);
-    }
-}
-
-void ImageTest::benchmarkHalfRaw()
-{
-    StarTrailer::Image img;
-
-    QBENCHMARK {
-        img.read("../../images/cr2/20130906_003859_IMG_8399.CR2", StarTrailer::Image::HalfRaw);
-    }
-}
-
-void ImageTest::benchmarkFullRaw()
-{
-    StarTrailer::Image img;
-
-    QBENCHMARK {
-        img.read("../../images/cr2/20130906_003859_IMG_8399.CR2", StarTrailer::Image::FullRaw);
-    }
-}
 
 void ImageTest::testComposite()
 {
