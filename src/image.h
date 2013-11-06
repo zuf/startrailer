@@ -56,7 +56,7 @@ public:
 class Image
 {
 public:
-    enum RawProcessingMode {HalfRaw, FullRaw, TinyPreview, SmallPreview, FullPreview};
+    enum RawProcessingMode {UndefinedRawProcessingMode, HalfRaw, FullRaw, TinyPreview, SmallPreview, FullPreview};
 
     Image();
     Image(const std::string &file, RawProcessingMode raw_processing_mode=FullPreview);

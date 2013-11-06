@@ -1,7 +1,8 @@
 #include <QString>
 #include <QtTest>
-
+#include <QTemporaryFile>
 #include "image.h"
+
 
 class ImageTest : public QObject
 {
@@ -13,7 +14,10 @@ public:
 private Q_SLOTS:
     void testConstructors();
     void testComposite();
-    void testToBuffer();    
+    void testToBuffer();
+    void testCopyConstructor();
+    void testWrongRead();
+    void testWrite();
 };
 
 ImageTest::ImageTest()
@@ -92,6 +96,45 @@ void ImageTest::testToBuffer()
 
     QVERIFY2(img0!=from_m2, "Image should be different");
     delete[] buf;
+}
+
+void ImageTest::testCopyConstructor()
+{
+    StarTrailer::Image img("../../images/cr2/20130906_003859_IMG_8399.CR2");
+    StarTrailer::Image img_copy(img);
+    QCOMPARE(img, img_copy);
+    img.read("../../images/jpeg/20130906_015110_IMG_8470-preview3.jpg");
+    QVERIFY2(img!=img_copy, "Image should be different");
+}
+
+void ImageTest::testWrongRead()
+{
+    StarTrailer::Image img;
+
+    // just ignore RawProcessingMode for non-RAW images
+    img.read("../../images/jpeg/20130906_015110_IMG_8470-preview3.jpg", StarTrailer::Image::UndefinedRawProcessingMode);
+
+    try {
+        img.read("../../images/cr2/20130906_003859_IMG_8399.CR2", StarTrailer::Image::UndefinedRawProcessingMode);
+        QFAIL("Exception not thrown");
+    }
+    catch(std::runtime_error &error){
+        QCOMPARE(QString(error.what()), QString("Unknown raw_processing_mode"));
+    }
+    catch (...) {
+        QFAIL("Wrong Exception thrown");
+    }
+}
+
+void ImageTest::testWrite()
+{
+    QTemporaryFile tmp_file("qt_test.bmp");
+    tmp_file.setAutoRemove(true);
+    StarTrailer::Image img("../../images/jpeg/20130906_015110_IMG_8470-preview3.jpg", StarTrailer::Image::UndefinedRawProcessingMode);
+    QString name = tmp_file.fileTemplate();
+    img.write(name.toStdString());
+    StarTrailer::Image img2(name.toStdString());
+    QCOMPARE(img, img2);
 }
 
 QTEST_APPLESS_MAIN(ImageTest)
