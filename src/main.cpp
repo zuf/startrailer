@@ -6,7 +6,7 @@ Q_DECLARE_METATYPE(Magick::Image*)
 
 int main(int argc, char *argv[])
 {
-    Magick::InitializeMagick(*argv); // Windows ImageMagick DLLs initialization shit
+    Magick::InitializeMagick(*argv); // Windows ImageMagick DLLs initialization shit    
     QApplication a(argc, argv);
     MainWindow w;
     w.show();

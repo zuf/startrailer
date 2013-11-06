@@ -84,9 +84,15 @@ public:
 
     friend const bool operator==(const Image &left, const Image &right){
         try {
-            //return false==(left.image->compare(*(right.image)));
-            left.image->compare(*(right.image));
-            return 0.0 == left.image->meanErrorPerPixel();
+            if (left.image->rows() == 0 || right.image->rows() == 0)
+            {
+                return true;
+            }
+            else
+            {
+                left.image->compare(*(right.image));
+                return 0.0 == left.image->meanErrorPerPixel();
+            }
         }
         catch(Magick::ErrorImage){
             return false;
@@ -98,9 +104,15 @@ public:
 
     friend const bool operator!=(const Image &left, const Image &right){
         try{
-            //return false!=(left.image->compare(*(right.image)));
-            left.image->compare(*(right.image));
-            return 0.0 != left.image->meanErrorPerPixel();
+            if (left.image->rows() == 0 || right.image->rows() == 0)
+            {
+                return true;
+            }
+            else
+            {
+                left.image->compare(*(right.image));
+                return 0.0 != left.image->meanErrorPerPixel();
+            }
         }
         catch(Magick::ErrorImage){
             return true;
