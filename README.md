@@ -1,5 +1,6 @@
 # StarTrailer
 ## helps you to make star trails from your photos
+[![Build Status](https://api.travis-ci.org/zuf/startrailer.png)](https://travis-ci.org/zuf/startrailer)
 
 
 > **This software are still at very early stage.**
