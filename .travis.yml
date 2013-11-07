@@ -11,7 +11,10 @@ before_install:
   - sudo apt-get install libraw-dev imagemagick libmagick++-dev qtbase5-dev qtchooser
   - sudo pip install cpp-coveralls --use-mirrors
 
-script: qtchooser -run-tool=qmake -qt=qt5 && make && cd ./tests/build/debug/ && ./tst_imagetest
+script: 
+  - qtchooser -run-tool=qmake -qt=qt5
+  - make
+  - make check
 
 after_success:
-  - coveralls --exclude tests
+  - coveralls --exclude tests --exclude-pattern '.*\.moc'

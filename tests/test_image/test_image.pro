@@ -11,7 +11,7 @@ QT       += testlib
 QT       -= gui
 
 TARGET = tst_imagetest
-CONFIG   += console
+CONFIG   += testcase console
 CONFIG   -= app_bundle
 
 TEMPLATE = app
@@ -23,6 +23,4 @@ DEFINES += SRCDIR=\\\"$$PWD/\\\"
 INCLUDEPATH += ../../src/
 SOURCES += ../../src/image.cpp
 HEADERS += ../../src/image.h
-
-
 
