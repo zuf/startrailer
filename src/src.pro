@@ -62,3 +62,4 @@ DEFINES += BUILDDATE=\\\"\"$$BUILDDATE\"\\\"
 
 PKGCONFIG += libraw_r
 #LIBS+=-lraw_r
+QMAKE_CXXFLAGS += -Werror -Wextra -pedantic -std=c++11

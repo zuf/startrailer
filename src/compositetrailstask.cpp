@@ -45,7 +45,7 @@ void CompositeTrailsTask::run()
         if (*m_stopped) return;
 
         // set progress
-        QMetaObject::invokeMethod(m_receiver, "announceProgress", Qt::QueuedConnection, Q_ARG(int, counter));
+        QMetaObject::invokeMethod(m_receiver, "announceProgress", Qt::QueuedConnection);
         if (m_preview_each_n_ms>0 && timer.elapsed() > redraw_each_ms)
         {
             timer.restart();

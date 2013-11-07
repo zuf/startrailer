@@ -39,8 +39,6 @@ private slots:
 
     void on_actionComposite_triggered();
 
-    void on_filesList_clicked(const QModelIndex &index);
-
 
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 
@@ -52,7 +50,7 @@ private slots:
 
     void on_actionClearSelection_triggered();
 
-    void announceProgress(int counter);    
+    void announceProgress();
 
     void composingFinished();
 
@@ -134,6 +132,8 @@ private:
     QActionGroup* preview_each_n_group;
 
     QElapsedTimer benchmark_timer;
+
+    QItemSelection selected_items;
 
     QVector<int> chunkSizes(const int size, const int chunkCount)
     {

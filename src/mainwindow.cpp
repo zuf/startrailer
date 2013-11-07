@@ -1,5 +1,5 @@
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include <QCloseEvent>
+#include <QWidget>
 #include <QDebug>
 #include <QModelIndexList>
 #include <QElapsedTimer>
@@ -10,6 +10,8 @@
 #include <QMutex>
 #include <Magick++.h>
 #include <QFileDialog>
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
 #include "playbackreader.h"
 
 #include "compositetrailstask.h"
@@ -144,11 +146,6 @@ void MainWindow::on_actionComposite_triggered()
     compositeSelected();
 }
 
-void MainWindow::on_filesList_clicked(const QModelIndex &index)
-{
-
-}
-
 void MainWindow::compositeSelected()
 {
     static QMutex mutex;
@@ -160,7 +157,7 @@ void MainWindow::compositeSelected()
     qDebug() << "Start composing...";
 
     QStringList files;
-    QModelIndexList selected_rows = ui->filesList->selectionModel()->selectedRows(0);
+    QModelIndexList selected_rows = ui->filesList->selectionModel()->selectedRows(0); // selected_items.indexes();
     QListIterator<QModelIndex> i(selected_rows);
     if (selected_rows.size()>1 && i.hasNext())
     {
@@ -242,6 +239,9 @@ void MainWindow::selectEachNRow(int n)
 
 void MainWindow::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
+    // TODO: Really use selected and deselected.
+    selected_items.merge(selected, QItemSelectionModel::Select);
+    selected_items.merge(deselected, QItemSelectionModel::Deselect);
 
     static QTimer *timer=0;
     if (timer)
@@ -269,7 +269,7 @@ void MainWindow::drawImage(StarTrailer::Image &image)
 
     size_t image_length = image.width()*image.height()*3;
 
-    uchar* data __attribute__((align(64))) = new uchar[image_length];
+    uchar* data __attribute__ ((aligned (32))) = new uchar[image_length];
     void* vd=data;
 
     size_t copied_bytes = image.to_buffer(vd);
@@ -312,7 +312,7 @@ void MainWindow::on_actionClearSelection_triggered()
     ui->statusBar->showMessage(tr("Selection cleared"), 5000);
 }
 
-void MainWindow::announceProgress(int counter)
+void MainWindow::announceProgress()
 {
     progress_bar->setValue( progress_bar->value() + 1 );
 }
@@ -366,6 +366,7 @@ void MainWindow::slot_compositeSelected()
     ui->statusBar->showMessage(tr("Selected: %1").arg(ui->filesList->selectionModel()->selectedRows().count()));
 
     if (ui->filesList->selectionModel()->selectedRows().size()==1)
+    //if (selected_items.indexes().size()==1)
     {
         QModelIndex index = ui->filesList->selectionModel()->selectedIndexes().first();
         if (!model->isDir(index))
@@ -388,6 +389,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {    
     stopped = true;
     QThreadPool::globalInstance()->waitForDone();
+    event->accept();
 }
 
 void MainWindow::on_actionClear_2_triggered()

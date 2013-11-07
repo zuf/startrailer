@@ -42,16 +42,17 @@ public:
 private:
     void run();
 
-    const int m_preview_each_n_ms;
     QObject *m_receiver;
     volatile bool *m_stopped;
     const QStringList m_sourceFiles;
-    StarTrailer::Image * m_out_image;
+    const int m_preview_each_n_ms;
+    const int m_task_index;
+    const int m_tasks_count;
     QMutex *m_mutex;
     StarTrailer::Image * m_preview_image;
     const Magick::CompositeOperator m_compose_op;
-    const int m_task_index;
-    const int m_tasks_count;
+
+    StarTrailer::Image * m_out_image;            
 };
 
 #endif // COMPOSITETRAILSTASK_H

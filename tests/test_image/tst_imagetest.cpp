@@ -18,6 +18,7 @@ private Q_SLOTS:
     void testCopyConstructor();
     void testWrongRead();
     void testWrite();
+    void testCopyAssign();
 };
 
 ImageTest::ImageTest()
@@ -77,16 +78,20 @@ void ImageTest::testToBuffer()
     StarTrailer::Image img0("../../images/cr2/20130906_003859_IMG_8399.CR2");
     StarTrailer::Image img1("../../images/jpeg/20130906_015110_IMG_8470-preview3.jpg");
 
-    void *buf = new char[3*img0.width()*img0.height()];
+    size_t bs = 3*img0.width()*img0.height();
+    char *buf = new char[bs];
+    void *vb = buf;
     size_t buf_length;
-    buf_length = img0.to_buffer(buf);
+    buf_length = img0.to_buffer(vb);
+
+    QCOMPARE(buf_length, bs);
 
     Magick::Image m(img0.width(), img0.height(), "RGB", Magick::CharPixel, buf);
     StarTrailer::Image from_m(m);
 
     QCOMPARE(img0, from_m);
 
-    img0.to_buffer(buf);
+    img0.to_buffer(vb);
     // touch the image
     ((char*)buf)[1]+=1;
     ((char*)buf)[2]+=1;
@@ -135,6 +140,23 @@ void ImageTest::testWrite()
     img.write(name.toStdString());
     StarTrailer::Image img2(name.toStdString());
     QCOMPARE(img, img2);
+}
+
+void ImageTest::testCopyAssign()
+{
+    StarTrailer::Image img1("../../images/cr2/20130906_003859_IMG_8399.CR2");
+    StarTrailer::Image img2("../../images/jpeg/20130906_015110_IMG_8470-preview3.jpg");
+    QVERIFY2(img1!=img2, "Image should be different");
+    img1 = img2;
+    QCOMPARE(img1, img2);
+    QVERIFY2(img1.get_magick_image()!=img2.get_magick_image(), "Pointers should be different");
+    const Magick::Image *before = img1.get_magick_image();
+    img1 = img1;
+    const Magick::Image *after = img1.get_magick_image();
+    QCOMPARE(before, after);
+    QCOMPARE(img1, img1);
+    QCOMPARE(img1, img2);
+
 }
 
 QTEST_APPLESS_MAIN(ImageTest)

@@ -62,6 +62,16 @@ public:
     Image(const std::string &file, RawProcessingMode raw_processing_mode=FullPreview);
     Image(const Magick::Image &image);
     Image(const Image &from_image);
+    Image & operator = (const Image & other)
+    {
+        if (this != &other)
+        {
+            delete image;
+            image = new Magick::Image(*other.image);
+        }
+        return *this;
+    }
+
 
     virtual ~Image();
 
@@ -74,15 +84,15 @@ public:
     //void composite(const Image *with_image, Magick::CompositeOperator mode = Magick::LightenCompositeOp);
 
 
-    const int width() const {
+    size_t width() const {
         return image->columns();
     }
 
-    const int height() const {
+    size_t height() const {
         return image->rows();
     }
 
-    friend const bool operator==(const Image &left, const Image &right){
+    friend bool operator==(const Image &left, const Image &right){
         try {
             if (left.image->rows() == 0 || right.image->rows() == 0)
             {
@@ -102,7 +112,7 @@ public:
         }
     }
 
-    friend const bool operator!=(const Image &left, const Image &right){
+    friend bool operator!=(const Image &left, const Image &right){
         try{
             if (left.image->rows() == 0 || right.image->rows() == 0)
             {

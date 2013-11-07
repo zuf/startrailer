@@ -24,8 +24,8 @@ public:
 private:
     void run();
 
-    QMutex *mutex;
     QQueue<const QByteArray *> *queue;
+    QMutex *mutex;    
     const QStringList files;
     //StarTrailer *st;
 };
