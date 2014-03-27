@@ -44,8 +44,6 @@ UI_DIR = $$DESTDIR/ui
 CONFIG += link_pkgconfig
 PKGCONFIG += Magick++
 
-
-#QMAKE_CXXFLAGS+=-fopenmp
 #LIBS+=-lgomp
 
 #QMAKE_CXXFLAGS_RELEASE += -O2

@@ -76,6 +76,7 @@
     <addaction name="action_Save_as"/>
     <addaction name="separator"/>
     <addaction name="actionE_xit"/>
+    <addaction name="actionOpen_directory"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">
@@ -223,9 +224,6 @@
    </property>
   </action>
   <action name="action_Save_as">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
    <property name="text">
     <string>&amp;Save as...</string>
    </property>
@@ -620,6 +618,11 @@
    </property>
    <property name="text">
     <string>Each 60 seconds</string>
+   </property>
+  </action>
+  <action name="actionOpen_directory">
+   <property name="text">
+    <string>Open directory</string>
    </property>
   </action>
  </widget>

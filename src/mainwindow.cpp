@@ -76,6 +76,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->actionPreviewEach_30s->setActionGroup(preview_each_n_group);
     ui->actionPreviewEach_60s->setActionGroup(preview_each_n_group);
     ui->actionWithout_preview->setActionGroup(preview_each_n_group);
+
+    ui->action_Save_as->setEnabled(true);
 }
 
 MainWindow::~MainWindow()
@@ -324,6 +326,7 @@ void MainWindow::composingFinished()
     progress_bar->setValue( progress_bar->value() + 1 );
     if (started_threads<=0)
     {
+//        ui->action_Save_as->setEnabled(true);
         progress_bar->hide();
         progress_bar->setValue(0);
         redrawPreview(true);
@@ -335,10 +338,17 @@ void MainWindow::composingFinished()
 
 void MainWindow::on_action_Save_as_triggered()
 {
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"),
-                                                    model->filePath(ui->filesList->rootIndex()),
-                                                    tr("Images (*.png *.jpg *.tif *.bmp)"));
-    preview_image->write(fileName.toStdString());
+    if (preview_image && preview_image->width()>0 && preview_image->height()>0)
+    {
+        QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"),
+                                                        model->filePath(ui->filesList->rootIndex()),
+                                                        tr("Images (*.png *.jpg *.tif *.bmp)"));
+        preview_image->write(fileName.toStdString());
+    }
+    else
+    {
+        QMessageBox::information(this, tr("Can\t save image"), tr("Image is empty"));
+    }
 }
 
 void MainWindow::on_actionE_xit_triggered()
