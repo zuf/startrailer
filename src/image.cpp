@@ -164,7 +164,20 @@ void Image::read_raw_with_libraw(const std::string &file, const bool half_size)
 {
     assert(raw_processor != 0);
 
-    raw_processor->imgdata.params.half_size = half_size;
+    raw_processor->imgdata.params.half_size = half_size ? 1 : 0;
+
+
+    raw_processor->imgdata.params.use_camera_wb = 1;
+    raw_processor->imgdata.params.output_bps = 8;
+    raw_processor->imgdata.params.no_auto_bright = 1;
+
+    //HACK: Expo corection
+//    raw_processor->imgdata.params.exp_correc = 0;
+//    raw_processor->imgdata.params.exp_shift = 1.0; // 0.25 = -2ev; 8.0 = +3ev; 1.0 = 0ev
+//    raw_processor->imgdata.params.exp_preser = 0.0;
+//    raw_processor->imgdata.params.user_qual = 3;
+//    raw_processor->imgdata.params.output_tiff = 0;
+//    raw_processor->imgdata.params.med_passes = 3;
 
     int result = raw_processor->unpack();
     if (LIBRAW_SUCCESS!=result){
@@ -176,6 +189,23 @@ void Image::read_raw_with_libraw(const std::string &file, const bool half_size)
         throw std::runtime_error(std::string("Can't process raw file ") + file  + ". Error: " + raw_processor->strerror(result));
     }
 
+    libraw_processed_image_t *processed_image = raw_processor->dcraw_make_mem_image(&result);
+
+    if (LIBRAW_SUCCESS!=result){
+        throw std::runtime_error(std::string("Can't process raw file ") + file  + ". Error: " + raw_processor->strerror(result));
+    }
+
+    MagickCore::StorageType bpp;
+    if (processed_image->bits == 8)
+        bpp = Magick::CharPixel;
+    else if (processed_image->bits == 16)
+        bpp = Magick::ShortPixel;
+    else
+        throw std::runtime_error(std::string("Unsupported bits per fixel for ") + file);
+
+    image->read( processed_image->width, processed_image->height, "RGB", bpp, processed_image->data);
+
+    raw_processor->dcraw_clear_mem(processed_image);
     raw_processor->recycle();
 }
 

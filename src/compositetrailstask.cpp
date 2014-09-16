@@ -34,7 +34,7 @@ void CompositeTrailsTask::run()
     {
         if (*m_stopped) return;
 
-        image.read(m_sourceFiles[i].toStdString());
+        image.read(m_sourceFiles[i].toStdString(), StarTrailer::Image::HalfRaw);
 
         if (*m_stopped) return;
 

@@ -185,7 +185,7 @@ void MainWindow::compositeSelected()
         //preview_image.read(files[0].toStdString());
         //        preview_image = st.read_image(files[0].toStdString());
         Q_ASSERT(preview_image!=0);
-        preview_image->read(files[0].toStdString());
+        preview_image->read(files[0].toStdString(), StarTrailer::Image::HalfRaw);
 
         //        qDebug() << "Files list made from selection and first image prepared in " << timer.elapsed() << "milliseconds";
 
@@ -266,7 +266,7 @@ void MainWindow::drawImage(StarTrailer::Image &image)
     Q_ASSERT(image.width()>0);
     Q_ASSERT(image.height()>0);
 
-#define CONVER_IMAGE_WITH_RGB888
+//#define CONVER_IMAGE_WITH_RGB888
 #ifdef CONVER_IMAGE_WITH_RGB888
 
     size_t image_length = image.width()*image.height()*3;
@@ -383,7 +383,7 @@ void MainWindow::slot_compositeSelected()
         {
             //            preview_image = st.read_image(model->filePath(index).toStdString());
             Q_ASSERT(preview_image);
-            preview_image->read(model->filePath(index).toStdString());
+            preview_image->read(model->filePath(index).toStdString(), StarTrailer::Image::HalfRaw);
             drawImage(*preview_image);
         }
     }
@@ -478,7 +478,7 @@ void MainWindow::on_actionPlay_triggered()
 
         int offset=0;
         Q_ASSERT(preview_image);
-        preview_image->read(files[0].toStdString());
+        preview_image->read(files[0].toStdString(), StarTrailer::Image::HalfRaw);
 
         QThreadPool::globalInstance()->waitForDone();
 
