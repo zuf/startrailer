@@ -204,15 +204,16 @@ void MainWindow::compositeSelected()
         {
             if (sizes[n]>0)
             {
+                QStringList chunkFiles = files.mid(offset, sizes[n]);
                 CompositeTrailsTask *task = new CompositeTrailsTask(this,
                                                                     &stopped,
-                                                                    files.mid(offset, sizes[n]),
+                                                                    chunkFiles,
                                                                     preview_each_n_ms,
                                                                     n,
                                                                     tasks_count,
                                                                     &mutex_preview_image,
                                                                     preview_image,
-                                                                    compose_op);
+                                                                     compose_op);
                 QThreadPool::globalInstance()->start(task);
                 ++started_threads;
                 offset += sizes[n];
@@ -231,9 +232,11 @@ void MainWindow::selectEachNRow(int n)
 {
     QItemSelection selection;
     int row=0;
-    while(ui->filesList->rootIndex().child(row, 0).isValid())
+    const QAbstractItemModel *model = ui->filesList->model();
+
+    while(model->index(row, 0, ui->filesList->rootIndex()).isValid())
     {
-        selection.append(QItemSelectionRange(ui->filesList->rootIndex().child(row, 0)));
+        selection.append(QItemSelectionRange(model->index(row, 0, ui->filesList->rootIndex())));
         row+=n;
     }
     ui->filesList->selectionModel()->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows);

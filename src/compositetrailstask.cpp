@@ -34,7 +34,8 @@ void CompositeTrailsTask::run()
     {
         if (*m_stopped) return;
 
-        image.read(m_sourceFiles[i].toStdString(), StarTrailer::Image::HalfRaw);
+        std::string s = m_sourceFiles[i].toStdString();
+        image.read(s, m_raw_processing_mode);
 
         if (*m_stopped) return;
 
@@ -51,7 +52,10 @@ void CompositeTrailsTask::run()
             timer.restart();
             if (m_mutex->tryLock())
             {
-                m_preview_image->composite(*m_out_image, m_compose_op);
+                StarTrailer::Image *resized_img = new StarTrailer::Image(*m_out_image);
+                resized_img->resample(m_preview_image->width(), m_preview_image->height());
+                m_preview_image->composite(*resized_img, m_compose_op);
+                delete resized_img;
                 QMetaObject::invokeMethod(m_receiver, "redrawPreview", Qt::QueuedConnection);
                 m_mutex->unlock();
             }
@@ -62,7 +66,17 @@ void CompositeTrailsTask::run()
     if (counter > 0)
     {
         m_mutex->lock();
-        m_preview_image->composite(*m_out_image, m_compose_op);
+
+        qDebug() << "preview WxH = " << m_preview_image->width() << "x" << m_preview_image->height();
+        qDebug() << "Out WxH = " << m_out_image->width() << "x" << m_out_image->height();
+
+        StarTrailer::Image *resized_img = new StarTrailer::Image(*m_out_image);
+        resized_img->resample(m_preview_image->width(), m_preview_image->height());
+        m_preview_image->composite(*resized_img, m_compose_op);
+        delete resized_img;
+
+        qDebug() << "Out WxH = " << m_out_image->width() << "x" << m_out_image->height();
+
         QMetaObject::invokeMethod(m_receiver, "redrawPreview", Qt::QueuedConnection, Q_ARG(bool, true));
         m_mutex->unlock();
     }

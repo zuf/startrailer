@@ -2,6 +2,7 @@
 #define COMPOSITETRAILSTASK_H
 
 #include <Magick++.h>
+#include <QObject>
 #include <QRunnable>
 #include <QMutex>
 #include <QStringList>
@@ -18,7 +19,8 @@ public:
                                  const int tasks_count,
                                  QMutex *mutex,
                                  StarTrailer::Image *preview,
-                                 const Magick::CompositeOperator compose_op=Magick::LightenCompositeOp)
+                                 const Magick::CompositeOperator compose_op=Magick::LightenCompositeOp,
+                                 const StarTrailer::Image::RawProcessingMode raw_mode=StarTrailer::Image::FullPreview)
 
         : m_receiver(receiver),
           m_stopped(stopped),
@@ -28,7 +30,8 @@ public:
           m_tasks_count(tasks_count),
           m_mutex(mutex),
           m_preview_image(preview),
-          m_compose_op(compose_op)
+          m_compose_op(compose_op),
+        m_raw_processing_mode(raw_mode)
     {
         //m_out_image(new Magick::Image(files.first().toStdString()))
         *m_stopped=false;
@@ -52,7 +55,8 @@ private:
     StarTrailer::Image * m_preview_image;
     const Magick::CompositeOperator m_compose_op;
 
-    StarTrailer::Image * m_out_image;            
+    StarTrailer::Image * m_out_image;
+    StarTrailer::Image::RawProcessingMode m_raw_processing_mode = StarTrailer::Image::FullPreview;
 };
 
 #endif // COMPOSITETRAILSTASK_H

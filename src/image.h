@@ -92,6 +92,11 @@ public:
         return image->rows();
     }
 
+    void resample(int wigth, int height){
+        Magick::Geometry g(wigth,height);
+        image->sample(g);
+    }
+
     friend bool operator==(const Image &left, const Image &right){
         try {
             if (left.image->rows() == 0 || right.image->rows() == 0)
@@ -104,10 +109,10 @@ public:
                 return 0.0 == left.image->meanErrorPerPixel();
             }
         }
-        catch(Magick::ErrorImage){
+        catch(Magick::ErrorImage const&){
             return false;
         }
-        catch(Magick::ErrorOption){
+        catch(Magick::ErrorOption const&){
             return false;
         }
     }
@@ -124,10 +129,10 @@ public:
                 return 0.0 != left.image->meanErrorPerPixel();
             }
         }
-        catch(Magick::ErrorImage){
+        catch(Magick::ErrorImage const&){
             return true;
         }
-        catch(Magick::ErrorOption){
+        catch(Magick::ErrorOption const&){
             return true;
         }
     }
