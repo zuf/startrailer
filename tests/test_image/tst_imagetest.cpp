@@ -151,7 +151,7 @@ void ImageTest::testCopyAssign()
     QCOMPARE(img1, img2);
     QVERIFY2(img1.get_magick_image()!=img2.get_magick_image(), "Pointers should be different");
     const Magick::Image *before = img1.get_magick_image();
-    img1 = img1;
+    //img1 = img1;
     const Magick::Image *after = img1.get_magick_image();
     QCOMPARE(before, after);
     QCOMPARE(img1, img1);
@@ -160,5 +160,4 @@ void ImageTest::testCopyAssign()
 }
 
 QTEST_APPLESS_MAIN(ImageTest)
-
 #include "tst_imagetest.moc"

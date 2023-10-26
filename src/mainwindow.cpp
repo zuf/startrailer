@@ -10,6 +10,8 @@
 #include <QMutex>
 #include <Magick++.h>
 #include <QFileDialog>
+#include <QClipboard>
+#include <QPixmap>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "playbackreader.h"
@@ -22,6 +24,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {    
     preview_image = new QuteImage();
     Q_ASSERT(preview_image);
+//    out_image = new QuteImage();
+//    Q_ASSERT(out_image);
     compose_op = MagickCore::LightenIntensityCompositeOp;
 
     ui->setupUi(this);
@@ -53,7 +57,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->graphicsView->setBackgroundBrush(QBrush(QColor(32,32,32), Qt::SolidPattern));
     ui->graphicsView->setResizeAnchor(QGraphicsView::AnchorViewCenter);
     ui->graphicsView->setScene(scene);
-    item->setTransformationMode(Qt::SmoothTransformation);
+    item->setTransformationMode(Qt::SmoothTransformation);    
 
     ui->splitter->setStretchFactor(1, 10);
 
@@ -170,6 +174,8 @@ void MainWindow::compositeSelected()
                 files << model->filePath(index);
         }
 
+        QApplication::processEvents();
+
         files.sort();
 
         //        qDebug() << "files.count(): " << files.count();
@@ -185,7 +191,13 @@ void MainWindow::compositeSelected()
         //preview_image.read(files[0].toStdString());
         //        preview_image = st.read_image(files[0].toStdString());
         Q_ASSERT(preview_image!=0);
-        preview_image->read(files[0].toStdString(), StarTrailer::Image::HalfRaw);
+        mutex_preview_image.lock();
+        // preview_image->read(files[0].toStdString(), raw_processing_mode);
+        preview_image->reset();
+//        out_image->reset();
+        mutex_preview_image.unlock();
+
+        QApplication::processEvents();
 
         //        qDebug() << "Files list made from selection and first image prepared in " << timer.elapsed() << "milliseconds";
 
@@ -212,11 +224,14 @@ void MainWindow::compositeSelected()
                                                                     n,
                                                                     tasks_count,
                                                                     &mutex_preview_image,
+                                                                    //out_image,
                                                                     preview_image,
-                                                                     compose_op);
+                                                                    compose_op,
+                                                                    raw_processing_mode);
                 QThreadPool::globalInstance()->start(task);
                 ++started_threads;
                 offset += sizes[n];
+                QApplication::processEvents();
             }
         }
     }
@@ -306,6 +321,20 @@ void MainWindow::drawImage(StarTrailer::Image &image)
     ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
 }
 
+void MainWindow::openDir(QString dir)
+{
+    model->setRootPath(dir);
+
+    ui->filesList->setModel(model);
+    ui->filesList->setRootIndex(model->index(dir));
+    model->sort(0);
+    delete preview_image;
+    preview_image = new QuteImage();
+//    delete out_image;
+//    out_image = new QuteImage();
+//    this->redrawPreview(true);
+}
+
 void MainWindow::on_actionUpdateFileList_triggered()
 {
     ui->filesList->update(ui->filesList->rootIndex());
@@ -332,7 +361,13 @@ void MainWindow::composingFinished()
 //        ui->action_Save_as->setEnabled(true);
         progress_bar->hide();
         progress_bar->setValue(0);
+//        mutex_preview_image.lock();
+//        preview_image = out_image; // copy content by overloaded operator
+//        Q_ASSERT(preview_image==out_image);
+//        mutex_preview_image.unlock();
+
         redrawPreview(true);
+
         qDebug() << "benchmark_timer.elapsed(): " << benchmark_timer.elapsed();
     }
 }
@@ -364,11 +399,13 @@ void MainWindow::on_actionE_xit_triggered()
 
 void MainWindow::on_action_About_triggered()
 {
+    QString librawVersion(LibRaw::version());
     QMessageBox::about(this, tr("Startrailer"), tr("<h1>Startrailer</h1>"
                                                    "Helps to make star trails from your photos.<br>"
-                                                   "<a href=\"https://github.com/zuf/startrailer\">https://github.com/zuf/startrailer</a><br><br>"
+                                                   "<a href=\"https://github.com/zuf/startrailer\">https://github.com/zuf/startrailer</a><br><br>"                                                   
                                                    "Git: %1<br>"
-                                                   "From: %2").arg(APP_REVISION).arg(QString::fromLocal8Bit(BUILDDATE)));
+                                                   "From: %2<br>"
+                                                   "libraw %3").arg(APP_REVISION).arg(QString::fromLocal8Bit(BUILDDATE)).arg(librawVersion));
 }
 
 void MainWindow::slot_compositeSelected()
@@ -382,12 +419,17 @@ void MainWindow::slot_compositeSelected()
     //if (selected_items.indexes().size()==1)
     {
         QModelIndex index = ui->filesList->selectionModel()->selectedIndexes().first();
-        if (!model->isDir(index))
-        {
-            //            preview_image = st.read_image(model->filePath(index).toStdString());
+        if (!model->isDir(index)) {
+            //            preview_image =
+            //            st.read_image(model->filePath(index).toStdString());
             Q_ASSERT(preview_image);
-            preview_image->read(model->filePath(index).toStdString(), StarTrailer::Image::HalfRaw);
-            drawImage(*preview_image);
+            try {
+                preview_image->read(model->filePath(index).toStdString(), raw_processing_mode);
+                drawImage(*preview_image);
+            } catch (std::runtime_error &e) {
+                qDebug() << "Can't read file: " << model->filePath(index);
+                qDebug() << e.what();
+            }
         }
     }
     else
@@ -481,7 +523,7 @@ void MainWindow::on_actionPlay_triggered()
 
         int offset=0;
         Q_ASSERT(preview_image);
-        preview_image->read(files[0].toStdString(), StarTrailer::Image::HalfRaw);
+        preview_image->read(files[0].toStdString(), raw_processing_mode);
 
         QThreadPool::globalInstance()->waitForDone();
 
@@ -571,3 +613,57 @@ void MainWindow::on_actionDifference_triggered()
 {
     compose_op = Magick::DifferenceCompositeOp;
 }
+
+void MainWindow::on_actionOpen_directory_triggered()
+{
+    QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory with images"),
+                                                    model->rootPath(),
+                                                    QFileDialog::ShowDirsOnly
+                                                        | QFileDialog::DontResolveSymlinks);
+    compositeSelected();
+    openDir(dir);
+}
+
+
+void MainWindow::on_actionOnly_jpeg_preview_triggered()
+{
+    raw_processing_mode = StarTrailer::Image::FullPreview;
+}
+
+
+void MainWindow::on_actionLighten_triggered()
+{
+    compose_op = MagickCore::LightenIntensityCompositeOp;
+}
+
+
+void MainWindow::on_actionDArken_triggered()
+{
+    compose_op = MagickCore::DarkenIntensityCompositeOp;
+}
+
+
+void MainWindow::on_actionLibraw_half_size_triggered()
+{
+    raw_processing_mode = StarTrailer::Image::HalfRaw;
+}
+
+
+void MainWindow::on_actionLibraw_full_size_triggered()
+{
+    raw_processing_mode = StarTrailer::Image::FullRaw;
+}
+
+
+void MainWindow::on_actionCopy_to_clipboard_triggered()
+{
+    Magick::Image img(*preview_image->get_magick_image());
+    Magick::Blob blob;
+    img.magick("BMP");
+    img.write( &blob );
+    QImage image;
+    image.loadFromData((uchar*)blob.data(), blob.length());
+
+    QApplication::clipboard()->setImage(image, QClipboard::Clipboard);
+}
+

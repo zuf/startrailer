@@ -1,6 +1,8 @@
 #include "image.h"
 #include <cassert>
 
+const int DEFAULT_JPEG_QUALITY=95;
+
 namespace StarTrailer
 {
 
@@ -28,59 +30,58 @@ Image::Image(const Magick::Image &from_image)
 
 Image::~Image()
 {
-    if (image)
-    {
-        delete image;
-    }
-    if (raw_processor)
-    {
-        raw_processor->recycle();
-        delete raw_processor;
-    }
-}
+    delete_data();
 
-void Image::read(const std::string &file, RawProcessingMode raw_processing_mode)
-{    
-    assert(raw_processor != 0);    
-    if (LIBRAW_SUCCESS==raw_processor->open_file(file.c_str()))
-    {
-        switch(raw_processing_mode)
-        {
-        case FullPreview:
-            read_preview_with_libraw(file);
-            break;
-        case HalfRaw:
-            read_raw_with_libraw(file, true);
-            break;
-        case FullRaw:
-            read_raw_with_libraw(file);
-            break;
-        case TinyPreview:
-            throw std::runtime_error("Read RAW with mode TinyPreview not yet implemented");
-            break;
-        case SmallPreview:
-            throw std::runtime_error("Read RAW with mode SmallPreview not yet implemented");
-            break;
-        default:
-            throw std::runtime_error("Unknown raw_processing_mode");
-        }
-    }
-    else
-    {
-        read_with_image_magick(file);
-    }
-
+//    if (image)
+//    {
+//        delete image;
+//    }
 //    if (raw_processor)
 //    {
+//        raw_processor->recycle();
 //        delete raw_processor;
-//        raw_processor=0;
 //    }
+}
+
+void Image::read(const std::string &file, RawProcessingMode raw_processing_mode) {
+    assert(raw_processor != 0);    
+    if (LIBRAW_SUCCESS == raw_processor->open_file(file.c_str())) {
+        try {
+          switch (raw_processing_mode) {
+          case FullPreview:
+            read_preview_with_libraw(file);
+            break;
+          case HalfRaw:
+            read_raw_with_libraw(file, true);
+            break;
+          case FullRaw:
+            read_raw_with_libraw(file);
+            break;
+          case TinyPreview:
+            throw std::runtime_error(
+                "Read RAW with mode TinyPreview not yet implemented");
+            break;
+          case SmallPreview:
+            throw std::runtime_error(
+                "Read RAW with mode SmallPreview not yet implemented");
+            break;
+          default:
+            throw std::runtime_error("Unknown raw_processing_mode");
+          }
+        } catch (const std::runtime_error &e) {
+          raw_processor->recycle();
+          read_with_image_magick(file);
+        }
+    } else {
+        read_with_image_magick(file);
+    }
 }
 
 void Image::write(const std::string &new_file)
 {
     assert(image != 0);
-    image->write(new_file);
+    image->quality(DEFAULT_JPEG_QUALITY);
+    image->write(new_file);    
 }
 
 size_t Image::to_buffer(void * &write_to_ptr)
@@ -93,6 +94,12 @@ size_t Image::to_buffer(void * &write_to_ptr)
 void Image::composite(const Image &with_image, Magick::CompositeOperator mode)
 {
     image->composite(*(with_image.get_magick_image()), 0, 0, mode);
+}
+
+void Image::reset()
+{
+    delete_data();
+    init();
 }
 
 void Image::init()
@@ -207,6 +214,19 @@ void Image::read_raw_with_libraw(const std::string &file, const bool half_size)
 
     raw_processor->dcraw_clear_mem(processed_image);
     raw_processor->recycle();
+}
+
+void Image::delete_data()
+{
+    if (image)
+    {
+        delete image;
+    }
+    if (raw_processor)
+    {
+        raw_processor->recycle();
+        delete raw_processor;
+    }
 }
 
 }

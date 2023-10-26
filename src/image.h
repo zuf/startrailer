@@ -66,7 +66,8 @@ public:
     {
         if (this != &other)
         {
-            delete image;
+            if (image != NULL)
+                delete image;
             image = new Magick::Image(*other.image);
         }
         return *this;
@@ -140,6 +141,7 @@ public:
     const Magick::Image *get_magick_image() const {
         return image;
     }
+    void reset();
 private:
 
 
@@ -148,6 +150,8 @@ private:
     void read_with_image_magick(const std::string &file);
     void read_preview_with_libraw(const std::string &file);
     void read_raw_with_libraw(const std::string &file, const bool half_size=false);
+
+    void delete_data();
 
     Magick::Image *image;
     LibRaw *raw_processor;

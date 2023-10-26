@@ -101,6 +101,20 @@ private slots:
 
     void on_actionPreviewEach_60s_triggered();
 
+    void on_actionOpen_directory_triggered();
+
+    void on_actionOnly_jpeg_preview_triggered();
+
+    void on_actionLighten_triggered();
+
+    void on_actionDArken_triggered();
+
+    void on_actionLibraw_half_size_triggered();
+
+    void on_actionLibraw_full_size_triggered();
+
+    void on_actionCopy_to_clipboard_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -118,15 +132,16 @@ private:
     QGraphicsScene* scene;
     QGraphicsPixmapItem* item;
 
-    volatile bool stopped;
-    //Magick::Image *preview_image;
+    volatile bool stopped;    
     QuteImage *preview_image;
+//    QuteImage *out_image;
     QMutex mutex_preview_image;
 
     QProgressBar *progress_bar;
 
 //    StarTrailer st;
     Magick::CompositeOperator compose_op;
+    StarTrailer::Image::RawProcessingMode raw_processing_mode = StarTrailer::Image::FullPreview;
     int started_threads;
     int preview_each_n_ms;
     QActionGroup* preview_each_n_group;
@@ -151,6 +166,8 @@ private:
         }
         return result;
     }
+
+    void openDir(QString dir);
 };
 
 #endif // MAINWINDOW_H

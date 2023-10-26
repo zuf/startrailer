@@ -73,10 +73,10 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <addaction name="actionOpen_directory"/>
     <addaction name="action_Save_as"/>
     <addaction name="separator"/>
     <addaction name="actionE_xit"/>
-    <addaction name="actionOpen_directory"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">
@@ -165,6 +165,7 @@
     <addaction name="menuComposite_mode"/>
     <addaction name="menuRAW_processing_mode"/>
     <addaction name="actionComposite_2"/>
+    <addaction name="actionCopy_to_clipboard"/>
    </widget>
    <widget class="QMenu" name="menuSelection">
     <property name="title">
@@ -623,6 +624,17 @@
   <action name="actionOpen_directory">
    <property name="text">
     <string>Open directory</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionCopy_to_clipboard">
+   <property name="text">
+    <string>Copy to clipboard</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
    </property>
   </action>
  </widget>
