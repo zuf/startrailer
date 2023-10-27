@@ -10,6 +10,7 @@
 #include <QItemSelection>
 #include <Magick++.h>
 #include <QProgressBar>
+#include <QLabel>
 #include <QActionGroup>
 #include <QMutex>
 #include <QOpenGLWidget>
@@ -116,6 +117,14 @@ private slots:
 
     void on_actionCopy_to_clipboard_triggered();
 
+    void on_actionZoom_In_triggered();
+
+    void on_actionZoom_Out_triggered();
+
+    void on_actionZoom_Reset_triggered();
+
+    void on_actionZoom_1_1_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -141,6 +150,7 @@ private:
     QMutex mutex_preview_image;
 
     QProgressBar *progress_bar;
+    QLabel *image_info_label;
 
 //    StarTrailer st;
     Magick::CompositeOperator compose_op;

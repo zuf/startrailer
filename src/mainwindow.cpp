@@ -13,6 +13,7 @@
 #include <QClipboard>
 #include <QPixmap>
 #include <QOpenGLWidget>
+#include <QLabel>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "playbackreader.h"
@@ -49,7 +50,8 @@ MainWindow::MainWindow(QWidget *parent) :
     model->sort(0);
 
     item = new QGraphicsPixmapItem();
-
+    item->setTransformationMode(Qt::SmoothTransformation);
+    item->setShapeMode(QGraphicsPixmapItem::BoundingRectShape);
     scene = new QGraphicsScene();
     scene->addItem(item);
 
@@ -58,17 +60,17 @@ MainWindow::MainWindow(QWidget *parent) :
     if (use_opengl) {
         gl = new QOpenGLWidget();
         QSurfaceFormat format;
-        format.setSamples(4);
+        format.setSamples(0);
         gl->setFormat(format);
         ui->graphicsView->setViewport(gl);
     }
 
     ui->graphicsView->setBackgroundBrush(QBrush(QColor(32,32,32), Qt::SolidPattern));
-    ui->graphicsView->setResizeAnchor(QGraphicsView::AnchorViewCenter);
+//    ui->graphicsView->setResizeAnchor(QGraphicsView::AnchorViewCenter);
     ui->graphicsView->setScene(scene);
-    item->setTransformationMode(Qt::SmoothTransformation);    
+//    item->setTransformationMode(Qt::SmoothTransformation);
 
-    ui->splitter->setStretchFactor(1, 10);
+    ui->splitter->setStretchFactor(1, 8);
 
     QObject::connect(ui->filesList->selectionModel(), &QItemSelectionModel::selectionChanged,
                      this, &MainWindow::selectionChanged);
@@ -76,6 +78,10 @@ MainWindow::MainWindow(QWidget *parent) :
     progress_bar = new QProgressBar(this);
     progress_bar->hide();
     ui->statusBar->addPermanentWidget(progress_bar);
+    image_info_label = new QLabel(this);
+    image_info_label->setAlignment(Qt::AlignBottom | Qt::AlignRight);
+    ui->statusBar->addPermanentWidget(image_info_label);
+
     started_threads=0;
 
     ui->actionPreviewEach_2s->trigger();
@@ -94,7 +100,8 @@ MainWindow::MainWindow(QWidget *parent) :
 }
 
 MainWindow::~MainWindow()
-{       
+{
+    delete image_info_label;
     delete progress_bar;
     delete scene;    
     delete ui;
@@ -330,6 +337,8 @@ void MainWindow::drawImage(StarTrailer::Image &image)
 #endif
     item->setPixmap(qpm);
     ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
+
+    image_info_label->setText(QString("%1×%2").arg(image.width()).arg(image.height()));
 }
 
 void MainWindow::openDir(QString dir)
@@ -676,5 +685,29 @@ void MainWindow::on_actionCopy_to_clipboard_triggered()
     image.loadFromData((uchar*)blob.data(), blob.length());
 
     QApplication::clipboard()->setImage(image, QClipboard::Clipboard);
+}
+
+
+void MainWindow::on_actionZoom_In_triggered()
+{
+    ui->graphicsView->zoomIn();
+}
+
+
+void MainWindow::on_actionZoom_Out_triggered()
+{
+    ui->graphicsView->zoomOut();
+}
+
+
+void MainWindow::on_actionZoom_Reset_triggered()
+{
+    ui->graphicsView->zoomFit();
+}
+
+
+void MainWindow::on_actionZoom_1_1_triggered()
+{
+    ui->graphicsView->resetZoom();
 }
 

@@ -9,12 +9,23 @@ class View : public QGraphicsView
 public:
     explicit View(QWidget *parent = 0);
 
+    qreal zoomFactor() const;
+
 protected:
-    void resizeEvent(QResizeEvent *event);
+    void resizeEvent(QResizeEvent *event) override;
+    void wheelEvent(QWheelEvent *event) override;
 
 signals:
+    void zoomChanged();
 
 public slots:
+    void zoomIn();
+    void zoomOut();
+    void resetZoom();
+    void zoomFit();
+
+private:
+    void zoomBy(qreal factor);
 
 };
 

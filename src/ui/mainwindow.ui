@@ -55,7 +55,23 @@
         <bool>true</bool>
        </attribute>
       </widget>
-      <widget class="View" name="graphicsView"/>
+      <widget class="View" name="graphicsView">
+       <property name="verticalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOff</enum>
+       </property>
+       <property name="horizontalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOff</enum>
+       </property>
+       <property name="transformationAnchor">
+        <enum>QGraphicsView::AnchorUnderMouse</enum>
+       </property>
+       <property name="viewportUpdateMode">
+        <enum>QGraphicsView::FullViewportUpdate</enum>
+       </property>
+       <property name="optimizationFlags">
+        <set>QGraphicsView::DontAdjustForAntialiasing</set>
+       </property>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -104,6 +120,11 @@
     </widget>
     <addaction name="actionAuto_trail_on_select"/>
     <addaction name="menuLive_preview_while_composite"/>
+    <addaction name="separator"/>
+    <addaction name="actionZoom_In"/>
+    <addaction name="actionZoom_Out"/>
+    <addaction name="actionZoom_Reset"/>
+    <addaction name="actionZoom_1_1"/>
    </widget>
    <widget class="QMenu" name="menuImage">
     <property name="title">
@@ -635,6 +656,26 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="actionZoom_In">
+   <property name="text">
+    <string>Zoom In</string>
+   </property>
+  </action>
+  <action name="actionZoom_Out">
+   <property name="text">
+    <string>Zoom Out</string>
+   </property>
+  </action>
+  <action name="actionZoom_Reset">
+   <property name="text">
+    <string>Zoom Reset</string>
+   </property>
+  </action>
+  <action name="actionZoom_1_1">
+   <property name="text">
+    <string>Zoom 1:1</string>
    </property>
   </action>
  </widget>
