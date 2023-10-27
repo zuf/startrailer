@@ -12,6 +12,7 @@
 #include <QFileDialog>
 #include <QClipboard>
 #include <QPixmap>
+#include <QOpenGLWidget>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "playbackreader.h"
@@ -54,6 +55,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
     qDebug() << "QThread::idealThreadCount(): " << QThread::idealThreadCount();
 
+    if (use_opengl) {
+        gl = new QOpenGLWidget();
+        QSurfaceFormat format;
+        format.setSamples(4);
+        gl->setFormat(format);
+        ui->graphicsView->setViewport(gl);
+    }
+
     ui->graphicsView->setBackgroundBrush(QBrush(QColor(32,32,32), Qt::SolidPattern));
     ui->graphicsView->setResizeAnchor(QGraphicsView::AnchorViewCenter);
     ui->graphicsView->setScene(scene);
@@ -87,8 +96,10 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {       
     delete progress_bar;
-    delete scene;
+    delete scene;    
     delete ui;
+    if (gl)
+        delete gl;
     delete model;
     delete preview_each_n_group;
 }

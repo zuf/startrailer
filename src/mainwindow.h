@@ -12,6 +12,7 @@
 #include <QProgressBar>
 #include <QActionGroup>
 #include <QMutex>
+#include <QOpenGLWidget>
 #include "image.h"
 #include "quteimage.h"
 #include <QElapsedTimer>
@@ -127,6 +128,8 @@ private:
     void drawImage(StarTrailer::Image &image);
 
     Ui::MainWindow *ui;
+    QOpenGLWidget *gl=0;
+    bool use_opengl=false;
     QFileSystemModel *model;
 
     QGraphicsScene* scene;
