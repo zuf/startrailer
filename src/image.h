@@ -3,9 +3,11 @@
 
 #include <Magick++.h>
 #include "libraw/libraw.h"
-#include <iostream>
+//#include <iostream>
 #include <string>
 #include <stdexcept>
+#include <cassert>
+#include <mutex>
 
 ///
 /// \brief Image class provides interface to composite different images
@@ -86,10 +88,14 @@ public:
 
 
     size_t width() const {
+        assert(image != 0);
+
         return image->columns();
     }
 
     size_t height() const {
+        assert(image != 0);
+
         return image->rows();
     }
 
@@ -155,6 +161,8 @@ private:
 
     Magick::Image *image;
     LibRaw *raw_processor;
+    std::mutex image_mutex;
+    std::mutex reset_mutex;
 };
 
 }

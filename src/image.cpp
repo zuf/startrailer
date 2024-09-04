@@ -44,6 +44,8 @@ Image::~Image()
 }
 
 void Image::read(const std::string &file, RawProcessingMode raw_processing_mode) {
+    const std::lock_guard<std::mutex> lock(image_mutex);
+
     assert(raw_processor != 0);    
     if (LIBRAW_SUCCESS == raw_processor->open_file(file.c_str())) {
         try {
@@ -79,6 +81,7 @@ void Image::read(const std::string &file, RawProcessingMode raw_processing_mode)
 
 void Image::write(const std::string &new_file)
 {
+    const std::lock_guard<std::mutex> lock(image_mutex);
     assert(image != 0);
     image->quality(DEFAULT_JPEG_QUALITY);
     image->write(new_file);    
@@ -86,6 +89,7 @@ void Image::write(const std::string &new_file)
 
 size_t Image::to_buffer(void * &write_to_ptr)
 {
+    const std::lock_guard<std::mutex> lock(image_mutex);
     const Magick::StorageType storage_type=Magick::CharPixel;    
     image->write(0, 0, image->columns(), image->rows(), "RGB", storage_type, write_to_ptr);
     return 3*image->columns()*image->rows();
@@ -93,18 +97,23 @@ size_t Image::to_buffer(void * &write_to_ptr)
 
 void Image::composite(const Image &with_image, Magick::CompositeOperator mode)
 {
+    const std::lock_guard<std::mutex> lock(image_mutex);
     image->composite(*(with_image.get_magick_image()), 0, 0, mode);
 }
 
 void Image::reset()
 {
+    const std::lock_guard<std::mutex> lock(reset_mutex);
     delete_data();
     init();
 }
 
 void Image::init()
 {
+    const std::lock_guard<std::mutex> lock(image_mutex);
+
     image=new Magick::Image();
+    image->quiet( false );
     raw_processor = new LibRaw();
 }
 
@@ -202,7 +211,7 @@ void Image::read_raw_with_libraw(const std::string &file, const bool half_size)
         throw std::runtime_error(std::string("Can't process raw file ") + file  + ". Error: " + raw_processor->strerror(result));
     }
 
-    MagickCore::StorageType bpp;
+    Magick::StorageType bpp;
     if (processed_image->bits == 8)
         bpp = Magick::CharPixel;
     else if (processed_image->bits == 16)
@@ -218,6 +227,8 @@ void Image::read_raw_with_libraw(const std::string &file, const bool half_size)
 
 void Image::delete_data()
 {
+    const std::lock_guard<std::mutex> lock(image_mutex);
+
     if (image)
     {
         delete image;

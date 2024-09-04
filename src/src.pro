@@ -42,7 +42,9 @@ UI_DIR = $$DESTDIR/ui
 
 #LIBS += `Magick++-config --cppflags --cxxflags --ldflags --libs`
 CONFIG += link_pkgconfig
-PKGCONFIG += Magick++
+#PKGCONFIG += Magick++
+CONFIG += link_pkgconfig
+PKGCONFIG = GraphicsMagick++
 
 #LIBS+=-lgomp
 
@@ -60,7 +62,7 @@ DEFINES += BUILDDATE=\\\"\"$$BUILDDATE\"\\\"
 
 PKGCONFIG += libraw_r
 #LIBS+=-lraw_r
-unix: QMAKE_CXXFLAGS += -Werror -Wextra -pedantic -std=c++11
+unix: QMAKE_CXXFLAGS += -std=c++11
 unix: QMAKE_CXXFLAGS_DEBUG += -fprofile-arcs -ftest-coverage
 LIBS += \
 -lgcov

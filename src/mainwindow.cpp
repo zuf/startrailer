@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
     Q_ASSERT(preview_image);
 //    out_image = new QuteImage();
 //    Q_ASSERT(out_image);
-    compose_op = MagickCore::LightenIntensityCompositeOp;
+    compose_op = Magick::CompositeOperator::LightenCompositeOp;
 
     ui->setupUi(this);
 
@@ -43,7 +43,22 @@ MainWindow::MainWindow(QWidget *parent) :
         start_path = cmdline_args.first();
     }
 
+
     model->setRootPath(start_path);
+    model->setReadOnly(true);
+
+    QStringList filters;
+    filters << "*.jpg";
+    filters << "*.jpeg";
+    filters << "*.png";
+    filters << "*.dng";
+    filters << "*.cr2";
+    filters << "*.crw";
+    filters << "*.arw";
+
+    model->setNameFilters(filters);
+    model->setNameFilterDisables(false);
+
 
     ui->filesList->setModel(model);
     ui->filesList->setRootIndex(model->index(start_path));
@@ -145,6 +160,8 @@ void MainWindow::redrawPreview(bool force)
 
 void MainWindow::on_filesList_doubleClicked(const QModelIndex &index)
 {
+    stopCompositing();
+
     QString path = model->filePath(index);
 
     if (model->fileInfo(index).isDir())
@@ -158,6 +175,8 @@ void MainWindow::on_filesList_doubleClicked(const QModelIndex &index)
 
 void MainWindow::on_actionBack_triggered()
 {
+    stopCompositing();
+
     QModelIndex parent_index = model->parent(ui->filesList->rootIndex());
     ui->filesList->setRootIndex(parent_index);
     model->setRootPath(model->filePath(parent_index));
@@ -174,11 +193,10 @@ void MainWindow::compositeSelected()
 {
     static QMutex mutex;
     mutex.lock();
-    stopped = true;
-    QThreadPool::globalInstance()->waitForDone();
+    stopCompositing();
 
     benchmark_timer.start();
-    qDebug() << "Start composing...";
+    qInfo() << "Start composing...";
 
     QStringList files;
     QModelIndexList selected_rows = ui->filesList->selectionModel()->selectedRows(0); // selected_items.indexes();
@@ -263,6 +281,8 @@ void MainWindow::compositeSelected()
 
 void MainWindow::selectEachNRow(int n)
 {
+    stopCompositing();
+
     QItemSelection selection;
     int row=0;
     const QAbstractItemModel *model = ui->filesList->model();
@@ -277,6 +297,8 @@ void MainWindow::selectEachNRow(int n)
 
 void MainWindow::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
+    stopCompositing();
+
     // TODO: Really use selected and deselected.
     selected_items.merge(selected, QItemSelectionModel::Select);
     selected_items.merge(deselected, QItemSelectionModel::Deselect);
@@ -297,10 +319,15 @@ void MainWindow::selectionChanged(const QItemSelection &selected, const QItemSel
 
 void MainWindow::drawImage(StarTrailer::Image &image)
 {
-    QPixmap qpm;
+    if (image.width() == 0 || image.height() == 0) {
+        item->setPixmap(QPixmap());
+        ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
 
-    Q_ASSERT(image.width()>0);
-    Q_ASSERT(image.height()>0);
+        image_info_label->setText("");
+        return;
+    }
+
+    QPixmap qpm;
 
 //#define CONVER_IMAGE_WITH_RGB888
 #ifdef CONVER_IMAGE_WITH_RGB888
@@ -329,7 +356,6 @@ void MainWindow::drawImage(StarTrailer::Image &image)
     Q_ASSERT(qpm.isNull()==false);
 #else
     Magick::Image img(*image.get_magick_image());
-
     Magick::Blob blob;
     img.magick("BMP");
     img.write( &blob );
@@ -343,25 +369,67 @@ void MainWindow::drawImage(StarTrailer::Image &image)
 
 void MainWindow::openDir(QString dir)
 {
+    stopCompositing();
+
     model->setRootPath(dir);
 
     ui->filesList->setModel(model);
     ui->filesList->setRootIndex(model->index(dir));
     model->sort(0);
-    delete preview_image;
-    preview_image = new QuteImage();
+
+    QuteImage *new_preview_image = new QuteImage();
+    QuteImage *old_preview_image = preview_image;
+    preview_image = new_preview_image;
+    delete old_preview_image;
+
+    drawImage(*preview_image);
+
+
+    //ui->filesList->setCurrentIndex(model->index(0));
 //    delete out_image;
 //    out_image = new QuteImage();
 //    this->redrawPreview(true);
 }
 
+void MainWindow::stopCompositing()
+{
+    static QMutex mutex;
+    mutex.lock();
+
+    stopped = true;
+    QThreadPool::globalInstance()->waitForDone();
+
+    mutex.unlock();
+}
+
+void MainWindow::selectFirstImageFile()
+{
+    stopCompositing();
+
+    QItemSelection selection;
+    int row=0;
+    const QAbstractItemModel *model = ui->filesList->model();
+
+    while(model->index(row, 0, ui->filesList->rootIndex()).isValid())
+    {
+        selection.append(QItemSelectionRange(model->index(row, 0, ui->filesList->rootIndex())));
+        ui->filesList->selectionModel()->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+        row++;
+
+        return;
+    }    
+}
+
 void MainWindow::on_actionUpdateFileList_triggered()
 {
+    stopCompositing();
     ui->filesList->update(ui->filesList->rootIndex());
 }
 
 void MainWindow::on_actionClearSelection_triggered()
 {
+    stopCompositing();
+
     ui->filesList->selectionModel()->clearSelection();
     ui->statusBar->showMessage(tr("Selection cleared"), 5000);
 }
@@ -411,8 +479,7 @@ void MainWindow::on_action_Save_as_triggered()
 
 void MainWindow::on_actionE_xit_triggered()
 {
-    stopped = true;
-    QThreadPool::globalInstance()->waitForDone();
+    stopCompositing();
 
     QApplication::quit();
 }
@@ -430,6 +497,12 @@ void MainWindow::on_action_About_triggered()
 
 void MainWindow::slot_compositeSelected()
 {
+    qDebug()<< "slot_compositeSelected() starts ";
+    static QMutex mutex;
+    mutex.lock();
+
+    stopCompositing();
+
     progress_bar->hide();
     progress_bar->setValue(0);
 
@@ -458,24 +531,27 @@ void MainWindow::slot_compositeSelected()
             compositeSelected(); // TODO: Doesn't redraw all. If selection only added, then add them to current preview.
         // If deselected.size()>0 then redraw all
     }
+
+    mutex.unlock();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {    
-    stopped = true;
-    QThreadPool::globalInstance()->waitForDone();
+    stopCompositing();
     event->accept();
 }
 
 void MainWindow::on_actionClear_2_triggered()
 {
     // TODO: Dry with toolbar button
+    stopCompositing();
     ui->filesList->selectionModel()->clearSelection();
     ui->statusBar->showMessage(tr("Selection cleared"), 5000);
 }
 
 void MainWindow::on_actionAll_triggered()
 {
+    stopCompositing();
     ui->filesList->selectAll();
 }
 
@@ -517,8 +593,7 @@ void MainWindow::on_actionAbout_Qt_triggered()
 
 void MainWindow::on_actionPlay_triggered()
 {
-    stopped = true;
-    QThreadPool::globalInstance()->waitForDone();
+    stopCompositing();
 
     QStringList files;
     QModelIndexList selected_rows = ui->filesList->selectionModel()->selectedRows(0);
@@ -631,11 +706,14 @@ void MainWindow::on_actionPreviewEach_60s_triggered()
 
 void MainWindow::on_actionDifference_triggered()
 {
+    stopCompositing();
     compose_op = Magick::DifferenceCompositeOp;
 }
 
 void MainWindow::on_actionOpen_directory_triggered()
 {
+    stopCompositing();
+
     QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory with images"),
                                                     model->rootPath(),
                                                     QFileDialog::ShowDirsOnly
@@ -647,30 +725,35 @@ void MainWindow::on_actionOpen_directory_triggered()
 
 void MainWindow::on_actionOnly_jpeg_preview_triggered()
 {
+    stopCompositing();
     raw_processing_mode = StarTrailer::Image::FullPreview;
 }
 
 
 void MainWindow::on_actionLighten_triggered()
 {
-    compose_op = MagickCore::LightenIntensityCompositeOp;
+    stopCompositing();
+    compose_op = Magick::CompositeOperator::LightenCompositeOp;
 }
 
 
-void MainWindow::on_actionDArken_triggered()
+void MainWindow::on_actionDarken_triggered()
 {
-    compose_op = MagickCore::DarkenIntensityCompositeOp;
+    stopCompositing();
+    compose_op = Magick::CompositeOperator::DarkenCompositeOp;
 }
 
 
 void MainWindow::on_actionLibraw_half_size_triggered()
 {
+    stopCompositing();
     raw_processing_mode = StarTrailer::Image::HalfRaw;
 }
 
 
 void MainWindow::on_actionLibraw_full_size_triggered()
 {
+    stopCompositing();
     raw_processing_mode = StarTrailer::Image::FullRaw;
 }
 
@@ -709,5 +792,12 @@ void MainWindow::on_actionZoom_Reset_triggered()
 void MainWindow::on_actionZoom_1_1_triggered()
 {
     ui->graphicsView->resetZoom();
+}
+
+
+void MainWindow::on_actionLighten_2_triggered()
+{
+    stopCompositing();
+    compose_op = Magick::CompositeOperator::LightenCompositeOp;
 }
 

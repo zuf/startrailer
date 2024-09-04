@@ -109,7 +109,7 @@ private slots:
 
     void on_actionLighten_triggered();
 
-    void on_actionDArken_triggered();
+    void on_actionDarken_triggered();
 
     void on_actionLibraw_half_size_triggered();
 
@@ -124,6 +124,8 @@ private slots:
     void on_actionZoom_Reset_triggered();
 
     void on_actionZoom_1_1_triggered();
+
+    void on_actionLighten_2_triggered();
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -181,6 +183,10 @@ private:
     }
 
     void openDir(QString dir);
+
+    void stopCompositing();
+
+    void selectFirstImageFile();
 };
 
 #endif // MAINWINDOW_H

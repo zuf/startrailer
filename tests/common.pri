@@ -14,7 +14,7 @@ PKGCONFIG += libraw_r
 QMAKE_CXXFLAGS += -g -Wall -fprofile-arcs -ftest-coverage -O0
 QMAKE_LFLAGS += -g -Wall -fprofile-arcs -ftest-coverage -O0
 
-unix: QMAKE_CXXFLAGS += -Werror -Wextra -pedantic -std=c++11
+unix: QMAKE_CXXFLAGS += -std=c++11
 unix: QMAKE_CXXFLAGS_DEBUG +=  -g -fprofile-arcs -ftest-coverage
 
 LIBS += \

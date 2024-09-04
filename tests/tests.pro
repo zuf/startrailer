@@ -5,3 +5,4 @@ SUBDIRS = test_image \
     ImageBenchmark
 
 include(common.pri)
+QMAKE_CXXFLAGS += -Wall -Wno-error
