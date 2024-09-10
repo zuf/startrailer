@@ -17,7 +17,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "playbackreader.h"
-
+#include "iconproxy.h"
 #include "compositetrailstask.h"
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -43,7 +43,6 @@ MainWindow::MainWindow(QWidget *parent) :
         start_path = cmdline_args.first();
     }
 
-
     model->setRootPath(start_path);
     model->setReadOnly(true);
 
@@ -59,10 +58,15 @@ MainWindow::MainWindow(QWidget *parent) :
     model->setNameFilters(filters);
     model->setNameFilterDisables(false);
 
+    //icon_provider = new QImageFileIconProvider();
+    //model->setIconProvider(icon_provider);
 
-    ui->filesList->setModel(model);
-    ui->filesList->setRootIndex(model->index(start_path));
-    model->sort(0);
+    icon_proxy = new IconProxy;
+    icon_proxy->setSourceModel(model);
+
+    ui->filesList->setModel(icon_proxy);
+    ui->filesList->setRootIndex(icon_proxy->mapFromSource(model->index(start_path)));
+    icon_proxy->sort(0);
 
     item = new QGraphicsPixmapItem();
     item->setTransformationMode(Qt::SmoothTransformation);
@@ -124,6 +128,12 @@ MainWindow::~MainWindow()
         delete gl;
     delete model;
     delete preview_each_n_group;
+
+    if (icon_provider)
+        delete icon_provider;
+
+    if (icon_proxy)
+        delete icon_proxy;
 }
 
 //void MainWindow::handleFinished()
@@ -166,9 +176,10 @@ void MainWindow::on_filesList_doubleClicked(const QModelIndex &index)
 
     if (model->fileInfo(index).isDir())
     {
-        ui->filesList->setRootIndex(index);
+        ui->filesList->setRootIndex(icon_proxy->mapFromSource(index));
         model->setRootPath(model->filePath(index));
         model->sort(0);
+        icon_proxy->sort(0);
     }
 }
 
@@ -177,10 +188,11 @@ void MainWindow::on_actionBack_triggered()
 {
     stopCompositing();
 
-    QModelIndex parent_index = model->parent(ui->filesList->rootIndex());
-    ui->filesList->setRootIndex(parent_index);
+    QModelIndex parent_index = icon_proxy->parent(ui->filesList->rootIndex());
+    ui->filesList->setRootIndex(icon_proxy->mapFromSource(parent_index));
     model->setRootPath(model->filePath(parent_index));
     model->sort(0);
+    icon_proxy->sort(0);
 }
 
 
@@ -373,9 +385,10 @@ void MainWindow::openDir(QString dir)
 
     model->setRootPath(dir);
 
-    ui->filesList->setModel(model);
-    ui->filesList->setRootIndex(model->index(dir));
+    ui->filesList->setModel(icon_proxy);
+    ui->filesList->setRootIndex(icon_proxy->mapFromSource(model->index(dir)));
     model->sort(0);
+    icon_proxy->sort(0);
 
     QuteImage *new_preview_image = new QuteImage();
     QuteImage *old_preview_image = preview_image;

@@ -17,6 +17,9 @@
 #include "image.h"
 #include "quteimage.h"
 #include <QElapsedTimer>
+#include "qimagefileiconprovider.h"
+#include "qiconthumbextractor.h"
+#include "iconproxy.h"
 
 namespace Ui {
 class MainWindow;
@@ -141,7 +144,8 @@ private:
     Ui::MainWindow *ui;
     QOpenGLWidget *gl=0;
     bool use_opengl=false;
-    QFileSystemModel *model;
+    QFileSystemModel *model=0;
+    IconProxy *icon_proxy=0;
 
     QGraphicsScene* scene;
     QGraphicsPixmapItem* item;
@@ -181,6 +185,8 @@ private:
         }
         return result;
     }
+
+    QImageFileIconProvider *icon_provider=0;
 
     void openDir(QString dir);
 

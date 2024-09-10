@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Terminal=false
+Name=Startrailer
+Icon=Startrailer
+Exec=startrailer
+Categories=Graphics;2DGraphics;RasterGraphics;Qt;

@@ -16,8 +16,11 @@ TEMPLATE = app
 #INCLUDEPATH += src
 
 SOURCES += main.cpp\
+    iconproxy.cpp \
         mainwindow.cpp \
     compositetrailstask.cpp \
+    qiconthumbextractor.cpp \
+    qimagefileiconprovider.cpp \
     view.cpp \
     playbackreader.cpp \
     image.cpp \
@@ -25,6 +28,9 @@ SOURCES += main.cpp\
 
 HEADERS  += mainwindow.h \
     compositetrailstask.h \
+    iconproxy.h \
+    qiconthumbextractor.h \
+    qimagefileiconprovider.h \
     view.h \
     playbackreader.h \
     image.h \
@@ -43,12 +49,11 @@ UI_DIR = $$DESTDIR/ui
 #LIBS += `Magick++-config --cppflags --cxxflags --ldflags --libs`
 CONFIG += link_pkgconfig
 #PKGCONFIG += Magick++
-CONFIG += link_pkgconfig
 PKGCONFIG = GraphicsMagick++
 
 #LIBS+=-lgomp
 
-#QMAKE_CXXFLAGS_RELEASE += -O2
+QMAKE_CXXFLAGS_RELEASE += -O3
 
 OTHER_FILES += \
     README.md
@@ -61,8 +66,10 @@ BUILDDATE = $$system(date "+%Y%m%d%H%M")
 DEFINES += BUILDDATE=\\\"\"$$BUILDDATE\"\\\"
 
 PKGCONFIG += libraw_r
+PKGCONFIG += libexif
 #LIBS+=-lraw_r
 unix: QMAKE_CXXFLAGS += -std=c++11
 unix: QMAKE_CXXFLAGS_DEBUG += -fprofile-arcs -ftest-coverage
+release: QMAKE_CXXFLAGS += -march=native -mtune=native -O3
 LIBS += \
 -lgcov
