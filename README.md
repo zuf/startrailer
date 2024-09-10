@@ -1,7 +1,5 @@
 # StarTrailer
 ## helps you to make star trails from your photos
-[![Build Status](https://api.travis-ci.org/zuf/startrailer.png)](https://travis-ci.org/zuf/startrailer)
-
 
 > **This software are still at very early stage.**
 
@@ -19,7 +17,8 @@
 
 ### Built with
 
-* ImageMagick - http://www.imagemagick.org/
+* GraphicsMagick - http://www.graphicsmagick.org/
+* libexif - https://github.com/libexif/libexif
 * Libraw - http://www.libraw.su/
 * Qt - http://qt-project.org/
 
@@ -78,7 +77,7 @@ Thanks a lot!
 
 ### License
 
-Copyright (c) 2013 Egor Vakhromtsev MIT Licensed, see [LICENSE-MIT] for details.
+Copyright (c) 2013-2024 Egor Vakhromtsev MIT Licensed, see [LICENSE-MIT] for details.
 
 ## FAQ
 
