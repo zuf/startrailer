@@ -15,9 +15,11 @@ TEMPLATE = app
 
 #INCLUDEPATH += src
 
+CONFIG += c++17
+
 SOURCES += main.cpp\
     iconproxy.cpp \
-        mainwindow.cpp \
+    mainwindow.cpp \
     compositetrailstask.cpp \
     qiconthumbextractor.cpp \
     qimagefileiconprovider.cpp \
@@ -46,9 +48,7 @@ MOC_DIR = $$DESTDIR/moc
 RCC_DIR = $$DESTDIR/qrc
 UI_DIR = $$DESTDIR/ui
 
-#LIBS += `Magick++-config --cppflags --cxxflags --ldflags --libs`
 CONFIG += link_pkgconfig
-#PKGCONFIG += Magick++
 PKGCONFIG = GraphicsMagick++
 
 #LIBS+=-lgomp
@@ -65,11 +65,20 @@ DEFINES += APP_REVISION=\\\"$$REVISION\\\"
 BUILDDATE = $$system(date "+%Y%m%d%H%M")
 DEFINES += BUILDDATE=\\\"\"$$BUILDDATE\"\\\"
 
+LIBEXIF_VER = $$system(pkgconf --modversion libexif)
+DEFINES += LIBEXIF_VERSION=\\\"$$LIBEXIF_VER\\\"
+
 PKGCONFIG += libraw_r
 PKGCONFIG += libexif
+
+#QMAKE_CXXFLAGS += -std=c++17
+
 #LIBS+=-lraw_r
-unix: QMAKE_CXXFLAGS += -std=c++11
+# unix: QMAKE_CXXFLAGS += -std=c++17
 unix: QMAKE_CXXFLAGS_DEBUG += -fprofile-arcs -ftest-coverage
 release: QMAKE_CXXFLAGS += -march=native -mtune=native -O3
 LIBS += \
 -lgcov
+
+RESOURCES += \
+    startrailer.qrc

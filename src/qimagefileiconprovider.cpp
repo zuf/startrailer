@@ -22,11 +22,9 @@ QIcon QImageFileIconProvider::icon(const QFileInfo &info) const
     //return QFileIconProvider::icon(info);
 
     if (!file_path.isEmpty() && info.isFile()) {
-        if (QFile(file_path).exists()) {
-
-            ExifData *ed = exif_loader_get_data(exif_loader);
+        if (QFile(file_path).exists()) {            
             exif_loader_write_file(exif_loader, file_path.toStdString().c_str());
-            ed = exif_loader_get_data(exif_loader);
+            ExifData *ed = exif_loader_get_data(exif_loader);
 
             if (ed) {
                 QPixmap p;

@@ -21,7 +21,8 @@ public:
 //                                 StarTrailer::Image *out,
                                  StarTrailer::Image *preview,
                                  const Magick::CompositeOperator compose_op=Magick::LightenCompositeOp,
-                                 const StarTrailer::Image::RawProcessingMode raw_mode=StarTrailer::Image::FullPreview)
+                                 const StarTrailer::Image::RawProcessingMode raw_mode=StarTrailer::Image::FullPreview,
+                                 const StarTrailer::Image::JPEGProcessingMode jpeg_mode=StarTrailer::Image::FullJpeg)
 
         : m_receiver(receiver),
           m_stopped(stopped),
@@ -33,7 +34,8 @@ public:
           m_preview_image(preview),
 //          m_out_image(out),
           m_compose_op(compose_op),
-        m_raw_processing_mode(raw_mode)
+        m_raw_processing_mode(raw_mode),
+        m_jpeg_processing_mode(jpeg_mode)
     {
         //m_out_image(new Magick::Image(files.first().toStdString()))
         *m_stopped=false;
@@ -61,6 +63,7 @@ private:
     StarTrailer::Image * m_tmp_image = 0;
     const Magick::CompositeOperator m_compose_op;
     StarTrailer::Image::RawProcessingMode m_raw_processing_mode = StarTrailer::Image::FullPreview;
+    StarTrailer::Image::JPEGProcessingMode m_jpeg_processing_mode = StarTrailer::Image::FullJpeg;
 };
 
 #endif // COMPOSITETRAILSTASK_H

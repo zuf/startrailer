@@ -67,7 +67,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->filesList->setModel(icon_proxy);
     ui->filesList->setRootIndex(icon_proxy->mapFromSource(model->index(start_path)));
     icon_proxy->sort(0);
-
+    // ui->filesList->setIconSize(QSize(64,64));
     item = new QGraphicsPixmapItem();
     item->setTransformationMode(Qt::SmoothTransformation);
     item->setShapeMode(QGraphicsPixmapItem::BoundingRectShape);
@@ -170,9 +170,7 @@ void MainWindow::redrawPreview(bool force)
 
 void MainWindow::on_filesList_doubleClicked(const QModelIndex &index)
 {
-    stopCompositing();
-
-    QString path = model->filePath(index);
+    stopCompositing();    
 
     if (model->fileInfo(index).isDir())
     {
@@ -204,7 +202,12 @@ void MainWindow::on_actionComposite_triggered()
 void MainWindow::compositeSelected()
 {
     static QMutex mutex;
-    mutex.lock();
+    //QMutexLocker locker(&mutex);
+
+    if (!mutex.tryLock()) {
+        qInfo() << "Compositing process already in progress...";
+        return;
+    }
     stopCompositing();
 
     benchmark_timer.start();
@@ -218,13 +221,25 @@ void MainWindow::compositeSelected()
         while (i.hasNext())
         {
             QModelIndex index = i.next();
-            if (!model->isDir(index))
+            if (!model->isDir(index)) {
                 files << model->filePath(index);
+            }
         }
 
         QApplication::processEvents();
 
         files.sort();
+
+        if (files.empty()) {
+            qInfo() << "No files was selected...";
+
+            mutex_preview_image.lock();
+            preview_image->reset();
+            mutex_preview_image.unlock();
+            redrawPreview(true);
+            mutex.unlock();
+            return;
+        }
 
         //        qDebug() << "files.count(): " << files.count();
 
@@ -275,7 +290,8 @@ void MainWindow::compositeSelected()
                                                                     //out_image,
                                                                     preview_image,
                                                                     compose_op,
-                                                                    raw_processing_mode);
+                                                                    raw_processing_mode,
+                                                                    jpeg_processing_mode);
                 QThreadPool::globalInstance()->start(task);
                 ++started_threads;
                 offset += sizes[n];
@@ -373,7 +389,7 @@ void MainWindow::drawImage(StarTrailer::Image &image)
     img.write( &blob );
     qpm.loadFromData((uchar*)blob.data(), blob.length());
 #endif
-    item->setPixmap(qpm);
+    item->setPixmap(qpm);    
     ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
 
     image_info_label->setText(QString("%1×%2").arg(image.width()).arg(image.height()));
@@ -500,12 +516,17 @@ void MainWindow::on_actionE_xit_triggered()
 void MainWindow::on_action_About_triggered()
 {
     QString librawVersion(LibRaw::version());
+    QString magickVersion(MagickLibVersionText);
+    magickVersion += " ";
+    magickVersion += MagickReleaseDate;
     QMessageBox::about(this, tr("Startrailer"), tr("<h1>Startrailer</h1>"
                                                    "Helps to make star trails from your photos.<br>"
                                                    "<a href=\"https://github.com/zuf/startrailer\">https://github.com/zuf/startrailer</a><br><br>"                                                   
                                                    "Git: %1<br>"
-                                                   "From: %2<br>"
-                                                   "libraw %3").arg(APP_REVISION).arg(QString::fromLocal8Bit(BUILDDATE)).arg(librawVersion));
+                                                   "From: %2<br><br>"
+                                                   "libraw %3<br>"
+                                                   "GraphicsMagick %4<br>"
+                                                   "libexif %5").arg(APP_REVISION).arg(QString::fromLocal8Bit(BUILDDATE)).arg(librawVersion).arg(magickVersion).arg(LIBEXIF_VERSION));
 }
 
 void MainWindow::slot_compositeSelected()
@@ -530,7 +551,7 @@ void MainWindow::slot_compositeSelected()
             //            st.read_image(model->filePath(index).toStdString());
             Q_ASSERT(preview_image);
             try {
-                preview_image->read(model->filePath(index).toStdString(), raw_processing_mode);
+                preview_image->read(model->filePath(index).toStdString(), raw_processing_mode, jpeg_processing_mode);
                 drawImage(*preview_image);
             } catch (std::runtime_error &e) {
                 qDebug() << "Can't read file: " << model->filePath(index);
@@ -615,7 +636,7 @@ void MainWindow::on_actionPlay_triggered()
     static QQueue<const QByteArray*> images_bytes_queue;
     static QMutex images_bytes_queue_mutex;
 
-    if (selected_rows.size()>1 && i.hasNext())
+    if ((selected_rows.size()>1) && i.hasNext())
     {
         stopped = false;
         while (i.hasNext())
@@ -631,7 +652,7 @@ void MainWindow::on_actionPlay_triggered()
 
         int offset=0;
         Q_ASSERT(preview_image);
-        preview_image->read(files[0].toStdString(), raw_processing_mode);
+        preview_image->read(files[0].toStdString(), raw_processing_mode, jpeg_processing_mode);
 
         QThreadPool::globalInstance()->waitForDone();
 
@@ -663,7 +684,6 @@ void MainWindow::on_actionPlay_triggered()
                 delete image_bytes;
                 item->setPixmap(qpm);
                 ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
-                delete image_bytes;
                 ++processed_files;
             }
             images_bytes_queue_mutex.unlock();
@@ -812,5 +832,23 @@ void MainWindow::on_actionLighten_2_triggered()
 {
     stopCompositing();
     compose_op = Magick::CompositeOperator::LightenCompositeOp;
+}
+
+
+void MainWindow::on_actionEach_N_triggered()
+{
+
+}
+
+
+void MainWindow::on_actionFull_size_JPEG_triggered()
+{
+    jpeg_processing_mode = StarTrailer::Image::FullJpeg;
+}
+
+
+void MainWindow::on_actionEmbedded_preview_triggered()
+{
+    jpeg_processing_mode = StarTrailer::Image::PreviewJPEG;
 }
 

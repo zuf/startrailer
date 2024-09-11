@@ -15,7 +15,7 @@ CompositeTrailsTask::~CompositeTrailsTask()
 
 void CompositeTrailsTask::run()
 {
-    qDebug() << "CompositeTrailsTask::run() starts";
+    // qDebug() << "CompositeTrailsTask::run() starts";
     if (*m_stopped)
         return;
 
@@ -37,7 +37,7 @@ void CompositeTrailsTask::run()
 
         std::string s = m_sourceFiles[i].toStdString();
         try {
-         image.read(s, m_raw_processing_mode);
+         image.read(s, m_raw_processing_mode, m_jpeg_processing_mode);
         } catch (std::runtime_error &e) {
          qDebug() << "Can't read file: " << m_sourceFiles[i] << "\n" << e.what();
          continue;
@@ -87,8 +87,8 @@ void CompositeTrailsTask::run()
     if (counter > 0)
     {
         m_mutex->lock();
-        qDebug() << "preview WxH = " << m_preview_image->width() << "x" << m_preview_image->height();
-        qDebug() << "Tmp WxH = " << m_tmp_image->width() << "x" << m_tmp_image->height();
+        // qDebug() << "preview WxH = " << m_preview_image->width() << "x" << m_preview_image->height();
+        // qDebug() << "Tmp WxH = " << m_tmp_image->width() << "x" << m_tmp_image->height();
 
 //        if (m_out_image->height() == 0 && m_out_image->width() == 0) {
 //            //delete m_out_image;
@@ -108,12 +108,12 @@ void CompositeTrailsTask::run()
             delete resized_img;
         }
 
-        qDebug() << "Tmp WxH = " << m_tmp_image->width() << "x" << m_tmp_image->height();
+        // qDebug() << "Tmp WxH = " << m_tmp_image->width() << "x" << m_tmp_image->height();
 
         QMetaObject::invokeMethod(m_receiver, "redrawPreview", Qt::QueuedConnection, Q_ARG(bool, true));
         m_mutex->unlock();
     }
 
     QMetaObject::invokeMethod(m_receiver, "composingFinished", Qt::QueuedConnection);
-    qDebug() << "CompositeTrailsTask::run() ended";
+    // qDebug() << "CompositeTrailsTask::run() ended";
 }

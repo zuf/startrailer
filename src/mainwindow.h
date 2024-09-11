@@ -130,6 +130,12 @@ private slots:
 
     void on_actionLighten_2_triggered();
 
+    void on_actionEach_N_triggered();
+
+    void on_actionFull_size_JPEG_triggered();
+
+    void on_actionEmbedded_preview_triggered();
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -161,6 +167,7 @@ private:
 //    StarTrailer st;
     Magick::CompositeOperator compose_op;
     StarTrailer::Image::RawProcessingMode raw_processing_mode = StarTrailer::Image::FullPreview;
+    StarTrailer::Image::JPEGProcessingMode jpeg_processing_mode = StarTrailer::Image::FullJpeg;
     int started_threads;
     int preview_each_n_ms;
     QActionGroup* preview_each_n_group;

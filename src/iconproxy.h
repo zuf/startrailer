@@ -3,9 +3,9 @@
 
 #include <QIdentityProxyModel>
 #include <QFileSystemModel>
-#include <QtWidgets>
 #include <QtConcurrent/QtConcurrent>
 #include <QThreadPool>
+#include <QCache>
 #include <QDebug>
 
 /// A thread-safe function that returns an icon for an item with a given path.
@@ -14,12 +14,15 @@ QIcon getThumbnailIcon(const QString & path);
 
 class IconProxy : public QIdentityProxyModel {
     Q_OBJECT
-    QMap<QString, QIcon> m_icons;
+    // QMap<QString, QIcon> m_icons;
+    QCache<QString, const QIcon> m_icons;
     Q_SIGNAL void hasIcon(const QString&, const QIcon&, const QPersistentModelIndex& index) const;
 
     void onIcon(const QString& path, const QIcon& icon, const QPersistentModelIndex& index) {
-        m_icons.insert(path, icon);
-        emit dataChanged(index, index, QVector<int>{QFileSystemModel::FileIconRole});
+        if (!icon.isNull()) {
+            m_icons.insert(path, new QIcon(icon));
+            emit dataChanged(index, index, QVector<int>{QFileSystemModel::FileIconRole});
+        }
     }
     QThreadPool *runnersPool=0;
 
@@ -29,21 +32,34 @@ public:
 
         if (role == QFileSystemModel::FileIconRole && index.column() == 0) {
             auto path = index.data(QFileSystemModel::FilePathRole).toString();
-            auto it = m_icons.find(path);
-            if (it != m_icons.end()) {
+            const QIcon *it = m_icons[path];
+            if (it != nullptr) {
+                return *it;
+            } else {
+                QPersistentModelIndex pIndex{index};
+                QtConcurrent::run(runnersPool, [this,path,pIndex]{
+                    emit hasIcon(path, getThumbnailIcon(path), pIndex);
+                });
+            }
+
+            /*f (it != m_icons.end()) {
                 if (! it->isNull()) return *it;
                 return QIdentityProxyModel::data(index, role);
-            }
-            QPersistentModelIndex pIndex{index};
-            QtConcurrent::run(runnersPool, [this,path,pIndex]{
-                emit hasIcon(path, getThumbnailIcon(path), pIndex);
-            });
-            return QVariant{};
+            }*/
+
+            // QPersistentModelIndex pIndex{index};
+            // QtConcurrent::run(runnersPool, [this,path,pIndex]{
+            //     emit hasIcon(path, getThumbnailIcon(path), pIndex);
+            // });
+            // return QIcon();
+            // return QVariant{};
+            return QIdentityProxyModel::data(index, role);
         }
         return QIdentityProxyModel::data(index, role);
     }
 
     IconProxy(QObject * parent = nullptr) : QIdentityProxyModel{parent} {
+        m_icons.setMaxCost(8192);
         connect(this, &IconProxy::hasIcon, this, &IconProxy::onIcon);
 
         runnersPool = new QThreadPool();

@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>530</width>
+    <height>289</height>
+   </rect>
+  </property>
   <property name="sizePolicy">
    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
     <horstretch>1</horstretch>
@@ -85,7 +93,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1112</width>
+     <width>530</width>
      <height>23</height>
     </rect>
    </property>
@@ -195,8 +203,16 @@
      <addaction name="actionLibraw_half_size"/>
      <addaction name="actionLibraw_full_size"/>
     </widget>
+    <widget class="QMenu" name="menuJPEG_processing_mode">
+     <property name="title">
+      <string>JPEG processing mode</string>
+     </property>
+     <addaction name="actionFull_size_JPEG"/>
+     <addaction name="actionEmbedded_preview"/>
+    </widget>
     <addaction name="menuComposite_mode"/>
     <addaction name="menuRAW_processing_mode"/>
+    <addaction name="menuJPEG_processing_mode"/>
     <addaction name="actionComposite_2"/>
     <addaction name="actionCopy_to_clipboard"/>
    </widget>
@@ -213,6 +229,7 @@
     <addaction name="actionSelectEach_25th"/>
     <addaction name="actionSelectEach_50th"/>
     <addaction name="actionSelectEach_100"/>
+    <addaction name="actionEach_N"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuView"/>
@@ -229,12 +246,15 @@
    </attribute>
    <addaction name="actionBack"/>
    <addaction name="actionUpdateFileList"/>
-   <addaction name="actionComposite"/>
    <addaction name="actionClearSelection"/>
+   <addaction name="actionComposite"/>
    <addaction name="actionPlay"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionBack">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::GoPrevious"/>
+   </property>
    <property name="text">
     <string>Back</string>
    </property>
@@ -243,16 +263,26 @@
    </property>
   </action>
   <action name="actionComposite">
+   <property name="icon">
+    <iconset resource="../startrailer.qrc">
+     <normaloff>:/icons/startrailer.png</normaloff>:/icons/startrailer.png</iconset>
+   </property>
    <property name="text">
     <string>Composite</string>
    </property>
   </action>
   <action name="actionUpdateFileList">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::ViewRefresh"/>
+   </property>
    <property name="text">
     <string>Update file list</string>
    </property>
   </action>
   <action name="actionClearSelection">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::EditClear"/>
+   </property>
    <property name="text">
     <string>Clear Selection</string>
    </property>
@@ -642,6 +672,9 @@
    </property>
   </action>
   <action name="actionPlay">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::MediaPlaybackStart"/>
+   </property>
    <property name="text">
     <string>Play (time lapse)</string>
    </property>
@@ -700,6 +733,30 @@
     <string>test</string>
    </property>
   </action>
+  <action name="actionEach_N">
+   <property name="text">
+    <string>Each N...</string>
+   </property>
+  </action>
+  <action name="actionFull_size_JPEG">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Full size JPEG</string>
+   </property>
+  </action>
+  <action name="actionEmbedded_preview">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Embedded preview</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -709,7 +766,9 @@
    <header>view.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../startrailer.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>actionComposite_2</sender>

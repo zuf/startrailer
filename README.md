@@ -7,8 +7,8 @@
 ### Benefits
 
 * Can read and composite RAW files with libraw. Useful for making previews of your shots before you start processing RAWs in your favourite processing software.
-* Reads many formats (with ImageMagick).
-* Can composite images with different methods (which ImageMagick support).
+* Reads many formats (with GraphicsMagick).
+* Can composite images with different methods (which GraphicsMagick support).
 * Ability to take fast previews of star trails or time lapse.
 * Cross platform. Should works on Linux, Mac and Windows.
 
@@ -66,11 +66,7 @@ So as you can clue, at one moment I finally saying that enough for me.
 And start make StarTrailer - the software which can gives you fast and nice preview of your great startrails.
 And you can just play with your night shots, even they stored in complicated RAW format.
 
-At the end of this story I want to send very big thanks to great authors of cool libs without which StarTrails can not were builded:
-
-* ImageMagick - http://www.imagemagick.org/
-* Libraw - http://www.libraw.su/
-* Qt - http://qt-project.org/
+At the end of this story I want to send very big thanks to great authors of cool libs without which StarTrails can not were builded.
 
 Thanks a lot!
 
@@ -83,7 +79,7 @@ Copyright (c) 2013-2024 Egor Vakhromtsev MIT Licensed, see [LICENSE-MIT] for det
 
 #### How to make star trails without this software
 
-1. Write your own script that use `convert -composite` from ImageMagick. Like [this][3] or [this one][5].
+1. Write your own script that use `convert -composite` from ImageMagick/GraphicsMagick. Like [this][3] or [this one][5].
 2. If you are on windows try [Startrails][6] application.
 
 

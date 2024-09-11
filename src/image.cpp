@@ -1,5 +1,14 @@
 #include "image.h"
 #include <cassert>
+#include <cstddef>
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <filesystem> // C++17
+#include <algorithm>
+#include <string>
 
 const int DEFAULT_JPEG_QUALITY=95;
 
@@ -16,10 +25,10 @@ Image::Image(const Image &from_image)
     raw_processor = new LibRaw();
 }
 
-Image::Image(const std::string &file, Image::RawProcessingMode raw_processing_mode)
+Image::Image(const std::string &file, Image::RawProcessingMode raw_processing_mode, Image::JPEGProcessingMode jpeg_processing_mode)
 {
     init();
-    read(file, raw_processing_mode);
+    read(file, raw_processing_mode, jpeg_processing_mode);
 }
 
 Image::Image(const Magick::Image &from_image)
@@ -43,13 +52,24 @@ Image::~Image()
 //    }
 }
 
-void Image::read(const std::string &file, RawProcessingMode raw_processing_mode) {
+void Image::read(const std::string &file, RawProcessingMode raw_processing_mode, JPEGProcessingMode jpeg_processing_mode) {
     const std::lock_guard<std::mutex> lock(image_mutex);
+    std::string extension = file.substr(file.find_last_of(".") + 1);
+    std::transform(extension.begin(), extension.end(), extension.begin(), ::toupper);
+
+    if (jpeg_processing_mode == PreviewJPEG && (extension == "JPG" || extension == "JPEG" || extension == "JPE")) {
+        try {
+            read_preview_from_jpeg(file);
+            return;
+        } catch (const std::runtime_error &e) {
+            // do nothing
+        }
+    }
 
     assert(raw_processor != 0);    
     if (LIBRAW_SUCCESS == raw_processor->open_file(file.c_str())) {
         try {
-          switch (raw_processing_mode) {
+          switch (raw_processing_mode) {          
           case FullPreview:
             read_preview_with_libraw(file);
             break;
@@ -126,7 +146,7 @@ void Image::read_with_image_magick(const std::string &file)
     }
     catch(Magick::Error &error)
     {
-       throw std::runtime_error(std::string("Can't open file: ") + file + std::string("ImageMagick reports: ") + error.what());
+       throw std::runtime_error(std::string("Can't open file: ") + file + std::string("GraphicsMagick reports: ") + error.what());
     }
     catch( std::exception &error )
     {
@@ -151,6 +171,11 @@ void Image::read_preview_with_libraw(const std::string &file)
     {
         // memory copied here
         Magick::Blob blob(raw_processor->imgdata.thumbnail.thumb, raw_processor->imgdata.thumbnail.tlength);
+
+        // How no avoid double free (via blob destructor and libraw's resycle method?)
+        // Magick::Blob blob;//(buf, preview_length);
+        // blob.updateNoCopy(raw_processor->imgdata.thumbnail.thumb, raw_processor->imgdata.thumbnail.tlength, Magick::Blob::MallocAllocator);
+
         image->read(blob);
     }
         break;
@@ -174,6 +199,72 @@ void Image::read_preview_with_libraw(const std::string &file)
     }
 
     raw_processor->recycle();
+}
+
+void Image::read_preview_from_jpeg(const std::string &file)
+{
+    assert(raw_processor != 0);
+    struct stat statbuf;
+
+    if (stat(file.c_str(), &statbuf) == -1)
+    {
+        throw std::runtime_error("failed to stat!");
+    }
+
+    FILE *f = fopen(file.c_str(), "rb");
+    if (f == NULL) {
+        throw std::runtime_error("failed open file!");
+    }
+
+    int c=-1;
+    int prev=-1;
+    bool in_image = 0;
+    size_t from=0;
+    size_t to=0;
+
+    const int max_preview_length = 1024*1024;
+    fseek(f, statbuf.st_size - max_preview_length, SEEK_SET);
+
+    while ((c = fgetc(f)) != EOF){
+        if (prev == 0xFF) {
+            if (in_image == 0 && c == 0xD8) {
+                in_image = 1;
+                from = ftell(f)-2;
+            } else {
+                if (in_image && c == 0xD9) {
+                    to = ftell(f);
+                    in_image = 0;
+                }
+            }
+        }
+
+        prev = c;
+    };
+
+    size_t preview_length = to - from;
+    if (preview_length == 0) {
+        fclose(f);
+        throw std::runtime_error("jpeg preview not found");
+    }
+
+    fseek(f, from, SEEK_SET);
+    void *buf = malloc(preview_length);
+    if (buf == nullptr) {
+        throw std::runtime_error("Can't allocate buffer!");
+
+    }
+    size_t result = fread(buf, 1, preview_length, f);
+    if (result != preview_length) {
+        free(buf);
+        throw std::runtime_error("File reading error!");
+    }
+    fclose(f);
+
+    Magick::Blob blob;//(buf, preview_length);
+    blob.updateNoCopy(buf, preview_length, Magick::Blob::MallocAllocator);
+    image->read(blob);
+
+    //free(buf); // should no free when updateNoCopy() from Magick::Blob used
 }
 
 void Image::read_raw_with_libraw(const std::string &file, const bool half_size)

@@ -24,7 +24,7 @@
 ///  img5 = new Image('photo.cr2', Image::ProcessingMode::Preview);  // same as img2
 ///
 ///  // From memory
-///  img6 = new Image(buffer_ptr, buffer_size); // load blob from memory (blob is content of file), guess format with ImageMagick
+///  img6 = new Image(buffer_ptr, buffer_size); // load blob from memory (blob is content of file), guess format with GraphicsMagick
 ///  img7 = new Image(buffer_ptr, buffer_size, Image::Format::RGB24);
 ///
 ///  // From other objects
@@ -59,9 +59,10 @@ class Image
 {
 public:
     enum RawProcessingMode {UndefinedRawProcessingMode, HalfRaw, FullRaw, TinyPreview, SmallPreview, FullPreview};
+    enum JPEGProcessingMode {UndefinedJPEGProcessingMode, FullJpeg, PreviewJPEG};
 
     Image();
-    Image(const std::string &file, RawProcessingMode raw_processing_mode=FullPreview);
+    Image(const std::string &file, RawProcessingMode raw_processing_mode=FullPreview, JPEGProcessingMode jpeg_processing_mode=FullJpeg);
     Image(const Magick::Image &image);
     Image(const Image &from_image);
     Image & operator = (const Image & other)
@@ -78,7 +79,7 @@ public:
 
     virtual ~Image();
 
-    void read(const std::string &file, RawProcessingMode raw_processing_mode=FullPreview);
+    void read(const std::string &file, RawProcessingMode raw_processing_mode=FullPreview, JPEGProcessingMode jpeg_processing_mode=FullJpeg);
     void write(const std::string &new_file);
 
     size_t to_buffer(void * &write_to_ptr);
@@ -155,6 +156,7 @@ private:
 
     void read_with_image_magick(const std::string &file);
     void read_preview_with_libraw(const std::string &file);
+    void read_preview_from_jpeg(const std::string &file);
     void read_raw_with_libraw(const std::string &file, const bool half_size=false);
 
     void delete_data();
