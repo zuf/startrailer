@@ -23,6 +23,7 @@ Image::Image(const Image &from_image)
 {
     image=new Magick::Image(*from_image.get_magick_image());
     raw_processor = new LibRaw();
+    empty = false;
 }
 
 Image::Image(const std::string &file, Image::RawProcessingMode raw_processing_mode, Image::JPEGProcessingMode jpeg_processing_mode)
@@ -34,7 +35,8 @@ Image::Image(const std::string &file, Image::RawProcessingMode raw_processing_mo
 Image::Image(const Magick::Image &from_image)
 {
     raw_processor = new LibRaw();
-    image = new Magick::Image(from_image);    
+    image = new Magick::Image(from_image);
+    empty = false;
 }
 
 Image::~Image()
@@ -134,6 +136,7 @@ void Image::init()
 
     image=new Magick::Image();
     image->quiet( false );
+    empty = true;
     raw_processor = new LibRaw();
 }
 
@@ -143,6 +146,7 @@ void Image::read_with_image_magick(const std::string &file)
     try
     {
         image->read(file);
+        empty = false;
     }
     catch(Magick::Error &error)
     {
@@ -177,12 +181,14 @@ void Image::read_preview_with_libraw(const std::string &file)
         // blob.updateNoCopy(raw_processor->imgdata.thumbnail.thumb, raw_processor->imgdata.thumbnail.tlength, Magick::Blob::MallocAllocator);
 
         image->read(blob);
+        empty = false;
     }
         break;
 
     case LIBRAW_THUMBNAIL_BITMAP:
     {
         image->read( raw_processor->imgdata.thumbnail.twidth, raw_processor->imgdata.thumbnail.theight, "RGB", Magick::CharPixel, raw_processor->imgdata.thumbnail.thumb);
+        empty = false;
     }
         break;
 
@@ -263,6 +269,7 @@ void Image::read_preview_from_jpeg(const std::string &file)
     Magick::Blob blob;//(buf, preview_length);
     blob.updateNoCopy(buf, preview_length, Magick::Blob::MallocAllocator);
     image->read(blob);
+    empty = false;
 
     //free(buf); // should no free when updateNoCopy() from Magick::Blob used
 }
@@ -311,6 +318,7 @@ void Image::read_raw_with_libraw(const std::string &file, const bool half_size)
         throw std::runtime_error(std::string("Unsupported bits per fixel for ") + file);
 
     image->read( processed_image->width, processed_image->height, "RGB", bpp, processed_image->data);
+    empty = false;
 
     raw_processor->dcraw_clear_mem(processed_image);
     raw_processor->recycle();

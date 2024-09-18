@@ -136,6 +136,8 @@ private slots:
 
     void on_actionEmbedded_preview_triggered();
 
+    void on_actionFull_size_JPEG_triggered(bool checked);
+
 protected:
     void closeEvent(QCloseEvent *event);
 

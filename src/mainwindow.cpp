@@ -843,12 +843,22 @@ void MainWindow::on_actionEach_N_triggered()
 
 void MainWindow::on_actionFull_size_JPEG_triggered()
 {
-    jpeg_processing_mode = StarTrailer::Image::FullJpeg;
+    // jpeg_processing_mode = StarTrailer::Image::FullJpeg;
 }
 
 
 void MainWindow::on_actionEmbedded_preview_triggered()
 {
-    jpeg_processing_mode = StarTrailer::Image::PreviewJPEG;
+    // jpeg_processing_mode = StarTrailer::Image::PreviewJPEG;
+}
+
+
+void MainWindow::on_actionFull_size_JPEG_triggered(bool checked)
+{
+    if (checked) {
+        jpeg_processing_mode = StarTrailer::Image::FullJpeg;        
+    } else {
+        jpeg_processing_mode = StarTrailer::Image::PreviewJPEG;
+    }
 }
 

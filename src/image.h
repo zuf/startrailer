@@ -89,12 +89,14 @@ public:
 
 
     size_t width() const {
+        if (empty) { return 0; }
         assert(image != 0);
 
         return image->columns();
     }
 
     size_t height() const {
+        if (empty) { return 0; }
         assert(image != 0);
 
         return image->rows();
@@ -165,6 +167,7 @@ private:
     LibRaw *raw_processor;
     std::mutex image_mutex;
     std::mutex reset_mutex;
+    bool empty = true;
 };
 
 }
